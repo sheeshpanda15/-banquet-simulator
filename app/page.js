@@ -122,57 +122,21 @@ function initMemory() {
 }
 
 // ============ 座位选择系统 ============
-// 玩家开局选择如何入座,不同选择影响初始 memory 和分数
-const SEATING_CHOICES = {
-  high: {
-    label: "径直找了个气派的位置",
-    desc: "你扫了一眼,挑了张看起来'像样'的椅子坐下——你都没意识到自己坐了主陪位置",
-    risk: "灾难性失礼",
-    riskColor: "#a83232",
-    narration: "你一坐下,全桌的笑声戛然而止。半秒后,张副总冲过来一把把你拽起来——'你小子!这位置能坐?!'李主任慢悠悠抬眼,瞥了你一眼,什么也没说。吴总皱了下眉。你被半推半搡按到了门口最低的位置,脸通红坐下。",
-    scoreDelta: { flattery: 0, lewdness: 0, dignity: -15 },
-    relations: {
-      zhuren: { stance: "不悦", reason: "上桌就坐错位置" },
-      wudong: { stance: "不悦", reason: "毫无规矩感" },
-      fuzong: { stance: "不悦", reason: "丢了他的脸" }
-    },
-    playerTags: ["上桌就坐错位置", "不懂规矩"]
-  },
-  middle: {
-    label: "找了几个重要人物旁边坐下",
-    desc: "你看见副总和科长,就凑到了他们边上——不算最尊位,但也不是末位",
-    risk: "轻微失礼",
-    riskColor: "#b56b2f",
-    narration: "你坐下后,吴总微微挪了挪椅子,腾出一些距离。赵科长笑得有点僵——'哎呀,小李这小伙子,坐得挺主动嘛。'空气里有种说不清的尴尬。",
-    scoreDelta: { flattery: 0, lewdness: 0, dignity: -5 },
-    relations: {
-      wudong: { stance: "不悦", reason: "他觉得你越界了" }
-    },
-    playerTags: ["位置感不够好"]
-  },
-  low: {
-    label: "默默挑了靠近门的座位",
-    desc: "你看了看,选了一个最不起眼、离门最近的位置——这是末位",
-    risk: "懂规矩",
-    riskColor: "#5a7a3e",
-    narration: "你刚坐下,李主任就轻轻点了点头,慢悠悠开口:'小李这孩子,有规矩。'张副总长舒一口气,赶紧附和:'是是是,我们小李一向懂事。'你成功避开了第一关。",
-    scoreDelta: { flattery: 5, lewdness: 0, dignity: 0 },
-    relations: {
-      zhuren: { stance: "偏好", reason: "你坐了末位懂规矩" },
-      fuzong: { stance: "偏好", reason: "为他长脸" }
-    },
-    playerTags: ["懂规矩"]
-  },
-  passive: {
-    label: "站着,等张副总安排",
-    desc: "你不动,等张副总告诉你坐哪",
-    risk: "中性",
-    riskColor: "#9c8068",
-    narration: "张副总瞥了你一眼,用下巴指了指门口附近的位置:'你坐那。'你乖乖坐下。没有人特别注意你——这也算一种胜利。",
-    scoreDelta: { flattery: 0, lewdness: 0, dignity: 0 },
-    relations: {},
-    playerTags: []
-  }
+// 游戏开局,4 人已坐(主任/吴总/副总/关系户),玩家从剩余 8 个空位选
+// 玩家不被告知后果,AI 即兴生成
+const PRE_SEATED = { 0: "zhuren", 1: "wudong", 2: "fuzong", 9: "guanxihu" };
+const SELECTABLE_SEATS = [3, 4, 5, 6, 7, 8, 10, 11];
+
+// 给 AI 的座位文化语义参考(玩家看不到这些)
+const SEAT_CULTURAL_MEANING = {
+  3:  "Seat 3 - 紧贴副总右侧,文化上是'三宾位'。坐这暗示想攀附副总,小失礼,副总可能略不悦但其他人不太在意",
+  4:  "Seat 4 - 右侧中段,位置不上不下,显得位置感不强,不算大错但显得无知",
+  5:  "Seat 5 - 副陪右侧偏下,中等偏安全,无功无过",
+  6:  "Seat 6 - 对门位(副陪位)。在中式酒桌文化中,这是主请客方的陪客主官位置,自命主请等于跟主任叫板,**极度失礼**",
+  7:  "Seat 7 - 副陪左侧偏下,中等偏安全,无功无过",
+  8:  "Seat 8 - 左下区,显得谦虚但不到末位,得体",
+  10: "Seat 10 - 主任左侧偏下,紧挨关系户宝宝(领导小舅子)。如果玩家知道宝宝身份,显得有眼力(讨好实权);不知道则显得无意中越界",
+  11: "Seat 11 - 主任左手位(副主宾位)。是仅次于主宾位的高位,玩家自己坐相当于和主任叫板,**严重失礼**"
 };
 
 // ============ Markdown 渲染助手 ============
@@ -676,60 +640,147 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
     setTurnInDish(0);
   };
 
-  // 玩家选了座位 -> 应用代价 -> 进入 playing
-  const chooseSeat = (choiceKey) => {
-    const choice = SEATING_CHOICES[choiceKey];
-    if (!choice) return;
-
-    // 应用分数变化
-    setScores(prev => ({
-      flattery: Math.max(0, Math.min(100, prev.flattery + (choice.scoreDelta.flattery || 0))),
-      lewdness: Math.max(0, Math.min(100, prev.lewdness + (choice.scoreDelta.lewdness || 0))),
-      dignity:  Math.max(0, Math.min(100, prev.dignity  + (choice.scoreDelta.dignity  || 0)))
-    }));
-
-    // 应用初始记忆
-    const initMem = initMemory();
-    for (const [cid, change] of Object.entries(choice.relations || {})) {
-      if (initMem.relations[cid]) {
-        initMem.relations[cid] = { stance: change.stance, reason: change.reason || "" };
-      }
-    }
-    initMem.playerTags = [...(choice.playerTags || [])];
-    setMemory(initMem);
-
-    // 浮动 toast 提示状态变化
-    const newToasts = [];
-    for (const [cid, change] of Object.entries(choice.relations || {})) {
-      newToasts.push({
-        id: Date.now() + Math.random(),
-        text: `${CHARACTERS[cid].name} → ${change.stance}`,
-        color: STANCE_COLORS[change.stance]
-      });
-    }
-    for (const tag of (choice.playerTags || [])) {
-      newToasts.push({
-        id: Date.now() + Math.random(),
-        text: `新标签:「${tag}」`,
-        color: "#d4a3b8"
-      });
-    }
+  // 浮动 toast helper - 错落出现
+  const flashToasts = (newToasts) => {
     newToasts.forEach((t, i) => {
       setTimeout(() => {
         setToasts(cur => [...cur, t]);
         setTimeout(() => setToasts(cur => cur.filter(x => x.id !== t.id)), 3800);
       }, i * 500);
     });
+  };
+
+  // 玩家点击座位 -> AI 即兴生成后果
+  const pickSeat = async (seatNum) => {
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+
+    const sysPrompt = `你是讽刺剧《饭局模拟器》的游戏总监。玩家(小李)在 12 人圆桌前选择座位。
+
+【已坐角色】
+- Seat 0(主位): 李主任(${CHARACTERS.zhuren.persona.slice(0,30)})
+- Seat 1(主宾位): 吴总(${CHARACTERS.wudong.persona.slice(0,30)})
+- Seat 2(副主宾): 张副总(${CHARACTERS.fuzong.persona.slice(0,30)})
+- Seat 9: 关系户宝宝(${CHARACTERS.guanxihu.persona.slice(0,30)})
+
+【该座位的文化含义】
+${SEAT_CULTURAL_MEANING[seatNum]}
+
+【任务】生成玩家入座这个座位的即时反应。基于该座位的失礼/得体程度,产生:
+1. 100-150字入座叙事(narration): 描述玩家坐下后桌上的反应——谁先开口?谁皱眉?谁尴尬笑?副总有没有救场?加入具体动作和短句对白,有戏剧感和讽刺感
+2. score_delta: flattery(-5到+10)、lewdness(0)、dignity(-20到+5)。失礼程度越重,dignity 扣得越多
+3. memory_updates.relations: 受影响最大的 1-3 个角色的态度变化(枚举: 喜欢/偏好/中立/不悦/敌意),每个带 8-15 字理由
+4. memory_updates.player_tags_add: 1-2 个 8-15 字标签(可讽刺如"上桌就坐错位置"/"懂规矩"/"位置感不够好"/"自命不凡")
+
+【输出 JSON,不带 markdown】
+{
+  "narration": "...",
+  "score_delta": {"flattery": 0, "lewdness": 0, "dignity": 0},
+  "memory_updates": {
+    "relations": {"角色ID": {"stance": "态度", "reason": "理由"}},
+    "player_tags_add": ["标签"]
+  }
+}`;
+
+    try {
+      const result = await callBackend(sysPrompt, `玩家选择了 Seat ${seatNum},立刻坐下了`);
+      applySeatingResult(result);
+    } catch (e) {
+      setError(e.message || "AI 总监打嗝了");
+      setLoading(false);
+    }
+  };
+
+  // 听张副总安排 - 确定性逻辑(3-5 人格随机)
+  const askForAssignment = () => {
+    if (loading) return;
+    const dignityLoss = 3 + Math.floor(Math.random() * 3); // 3, 4, or 5
+
+    const initMem = initMemory();
+    initMem.relations.fuzong = { stance: "不悦", reason: "你连位置都不会挑" };
+    initMem.playerTags = ["在场合中无所适从"];
+    setMemory(initMem);
+
+    setScores(prev => ({
+      ...prev,
+      dignity: Math.max(0, prev.dignity - dignityLoss)
+    }));
+
+    flashToasts([
+      { id: Date.now() + Math.random(), text: `张副总 → 不悦`, color: STANCE_COLORS["不悦"] },
+      { id: Date.now() + Math.random(), text: `人格 -${dignityLoss}`, color: "#a83232" },
+      { id: Date.now() + Math.random(), text: `新标签:「在场合中无所适从」`, color: "#d4a3b8" }
+    ]);
+
+    setHistory([
+      { type: "narration", text: "你站在门口愣了片刻,眼神在桌面游移——这种场面你完全没经验。" },
+      { type: "narration", text: "张副总不耐烦地叹了口气,用下巴朝靠近门口的位置指了指:'你坐那。' 你乖乖坐下,脸有点发烫。其他人没说话,但也没看你——你被默认为'安全的低位'。" }
+    ]);
+
+    setPhase("playing");
+    setTimeout(() => callGM(null, true), 200);
+  };
+
+  // 应用 AI 生成的座位选择结果
+  const applySeatingResult = (result) => {
+    // 应用分数变化
+    if (result.score_delta) {
+      setScores(prev => ({
+        flattery: Math.max(0, Math.min(100, prev.flattery + (result.score_delta.flattery || 0))),
+        lewdness: Math.max(0, Math.min(100, prev.lewdness + (result.score_delta.lewdness || 0))),
+        dignity:  Math.max(0, Math.min(100, prev.dignity  + (result.score_delta.dignity  || 0)))
+      }));
+    }
+
+    // 应用记忆变化
+    const newToasts = [];
+    if (result.memory_updates) {
+      const initMem = initMemory();
+
+      if (result.memory_updates.relations) {
+        for (const [cid, change] of Object.entries(result.memory_updates.relations)) {
+          if (!CHARACTERS[cid] || !change) continue;
+          const stance = STANCES.includes(change.stance) ? change.stance : "中立";
+          initMem.relations[cid] = { stance, reason: change.reason || "" };
+          if (stance !== "中立") {
+            newToasts.push({
+              id: Date.now() + Math.random(),
+              text: `${CHARACTERS[cid].name} → ${stance}`,
+              color: STANCE_COLORS[stance]
+            });
+          }
+        }
+      }
+
+      if (Array.isArray(result.memory_updates.player_tags_add)) {
+        const tags = result.memory_updates.player_tags_add
+          .filter(t => typeof t === "string" && t.trim())
+          .slice(0, MAX_PLAYER_TAGS);
+        initMem.playerTags = tags;
+        for (const tag of tags) {
+          newToasts.push({
+            id: Date.now() + Math.random(),
+            text: `新标签:「${tag}」`,
+            color: "#d4a3b8"
+          });
+        }
+      }
+
+      setMemory(initMem);
+    }
+
+    flashToasts(newToasts);
 
     // 设置开场叙事
     setHistory([
       { type: "narration", text: "你穿着不合身的衬衫被张副总拽进了包间。十一双眼睛同时看向你。" },
-      { type: "narration", text: choice.narration }
+      { type: "narration", text: result.narration || "你坐下了。" }
     ]);
 
-    // 进入 playing,开始上第一道菜
+    setLoading(false);
     setPhase("playing");
-    setTimeout(() => callGM(null, true), 200);
+    setTimeout(() => callGM(null, true), 300);
   };
 
   const generateFinalReport = async () => {
@@ -1041,46 +1092,116 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
               fontFamily: "'Ma Shan Zheng', cursive", color: "#c9a558",
               textShadow: "0 0 20px rgba(201,165,88,0.3)"
             }}>请落座</h2>
-            <p className="max-w-xl text-center mb-8 text-sm leading-relaxed" style={{
+            <p className="max-w-xl text-center mb-2 text-sm leading-relaxed" style={{
               color: "#e8d5a8", fontFamily: "'Noto Sans SC', sans-serif"
             }}>
-              李主任已经坐在了主位上。桌上还有几个空位。<br/>
-              <span style={{ color: "#9c8068" }}>
-                中国饭局的潜规则:座次本身就是身份。坐错位置,后果你自己承担。
-              </span>
+              李主任、吴总、张副总、宝宝已经坐下。<br/>
+              <span style={{ color: "#9c8068" }}>桌上还有 8 个空位,选一个坐下。</span>
+            </p>
+            <p className="max-w-xl text-center mb-6 text-xs italic" style={{
+              color: "#a8748a", fontFamily: "'Noto Sans SC', sans-serif"
+            }}>
+              · 后果只有坐下后才知道 ·
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl w-full px-4" style={{
-              fontFamily: "'Noto Sans SC', sans-serif"
-            }}>
-              {Object.entries(SEATING_CHOICES).map(([key, choice]) => (
-                <button key={key} onClick={() => chooseSeat(key)}
-                  className="text-left p-4 rounded-lg transition-all hover:scale-[1.02] hover:bg-opacity-100"
-                  style={{
-                    background: "rgba(0,0,0,0.4)",
-                    border: `1px solid ${choice.riskColor}`,
-                    boxShadow: `0 0 10px ${choice.riskColor}33`
-                  }}>
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <div style={{
-                      fontFamily: "'Ma Shan Zheng', cursive",
-                      fontSize: "1.25rem",
-                      color: "#c9a558"
-                    }}>{choice.label}</div>
-                    <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0" style={{
-                      background: choice.riskColor + "33", color: choice.riskColor,
-                      border: `1px solid ${choice.riskColor}`
-                    }}>{choice.risk}</span>
+            {/* 可点击圆桌 SVG */}
+            <div className="w-full max-w-md mb-6 relative">
+              <svg viewBox="0 0 400 400" className="w-full h-auto">
+                <defs>
+                  <radialGradient id="seatTableGrad" cx="50%" cy="50%" r="50%">
+                    <stop offset="0%" stopColor="#5c3a2a" />
+                    <stop offset="100%" stopColor="#2a1810" />
+                  </radialGradient>
+                  <filter id="hoverGlow">
+                    <feGaussianBlur stdDeviation="3" result="b" />
+                    <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                  </filter>
+                </defs>
+
+                {/* 桌面 */}
+                <circle cx={200} cy={200} r={100} fill="url(#seatTableGrad)" stroke="#7a5028" strokeWidth="2" />
+                <circle cx={200} cy={200} r={75} fill="none" stroke="#c9a558" strokeWidth="0.5" opacity="0.3" />
+                <text x={200} y={196} textAnchor="middle" fontSize="11" fill="#9c8068"
+                  style={{ fontFamily: "'Noto Sans SC', sans-serif" }}>
+                  包间圆桌
+                </text>
+                <text x={200} y={212} textAnchor="middle" fontSize="9" fill="#7a6b4f" style={{ fontStyle: "italic" }}>
+                  · 选择落座位置 ·
+                </text>
+
+                {/* 门口标记 */}
+                <text x={200} y={385} textAnchor="middle" fontSize="9" fill="#9c8068">↓ 门口</text>
+
+                {/* 12 个座位 */}
+                {Array.from({ length: 12 }).map((_, i) => {
+                  const angle = (i / 12) * 2 * Math.PI - Math.PI / 2;
+                  const x = 200 + 145 * Math.cos(angle);
+                  const y = 200 + 145 * Math.sin(angle);
+                  const preSeatedId = PRE_SEATED[i];
+
+                  if (preSeatedId) {
+                    const c = CHARACTERS[preSeatedId];
+                    return (
+                      <g key={i}>
+                        <circle cx={x} cy={y} r={18} fill={c.color}
+                          stroke="#2a1810" strokeWidth="1.5" />
+                        <text x={x} y={y + 4} textAnchor="middle" fontSize="10" fill="#fff" fontWeight="bold">
+                          {c.short.slice(0, 2)}
+                        </text>
+                      </g>
+                    );
+                  }
+
+                  // 空座位 - 可点击
+                  return (
+                    <g key={i} style={{ cursor: loading ? "wait" : "pointer" }}
+                      onClick={() => !loading && pickSeat(i)}>
+                      <circle cx={x} cy={y} r={18} fill="rgba(232,213,168,0.08)"
+                        stroke="#c9a558" strokeWidth="1.5" strokeDasharray="3,2"
+                        style={{ transition: "all 0.2s" }}
+                        onMouseEnter={(e) => {
+                          if (!loading) {
+                            e.target.setAttribute("fill", "rgba(201,165,88,0.3)");
+                            e.target.setAttribute("r", "21");
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.setAttribute("fill", "rgba(232,213,168,0.08)");
+                          e.target.setAttribute("r", "18");
+                        }}
+                      />
+                      <text x={x} y={y + 5} textAnchor="middle" fontSize="14" fill="#c9a558" fontWeight="bold"
+                        style={{ pointerEvents: "none" }}>?</text>
+                    </g>
+                  );
+                })}
+              </svg>
+
+              {loading && (
+                <div className="absolute inset-0 flex items-center justify-center" style={{
+                  background: "rgba(26,10,4,0.7)", backdropFilter: "blur(2px)"
+                }}>
+                  <div className="flex flex-col items-center gap-2" style={{ color: "#c9a558" }}>
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span className="text-xs italic" style={{ fontFamily: "'Noto Sans SC', sans-serif" }}>
+                      所有人的目光跟随你...
+                    </span>
                   </div>
-                  <div className="text-xs leading-relaxed" style={{ color: "#e8d5a8" }}>
-                    {choice.desc}
-                  </div>
-                </button>
-              ))}
+                </div>
+              )}
             </div>
 
-            <p className="text-xs italic mt-8 max-w-md text-center" style={{ color: "#9c8068" }}>
-              这个选择决定开场的人际状态。一旦坐下,无法回头。
+            {/* 听安排按钮 */}
+            <button onClick={askForAssignment} disabled={loading}
+              className="px-5 py-2 rounded-full text-sm transition-all hover:opacity-80 disabled:opacity-40"
+              style={{
+                background: "transparent", color: "#9c8068",
+                border: "1px solid #5c3a2a", fontFamily: "'Noto Sans SC', sans-serif"
+              }}>
+              站着,等张副总安排
+            </button>
+            <p className="text-xs italic mt-3 max-w-md text-center" style={{ color: "#7a6b4f" }}>
+              (这个选项也有代价,只是相对小一点)
             </p>
           </div>
         )}
