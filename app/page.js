@@ -139,6 +139,65 @@ const SEAT_CULTURAL_MEANING = {
   11: "Seat 11 - 主任左手位(副主宾位)。是仅次于主宾位的高位,玩家自己坐相当于和主任叫板,**严重失礼**"
 };
 
+// ============ 剧本(场景模板)============
+// 玩家在开局选择一个剧本,决定整局的张力与目标
+const SCENARIOS = {
+  approval: {
+    name: "求人办事",
+    teaser: "公司要拿一份关键批文,你被拉来陪客",
+    pressure: "公司命脉系于今晚",
+    dialogue: [
+      "听好了。今晚这顿饭,是咱公司的脸面。",
+      "李主任,你认识吧?他主管咱要的那批批文。今晚必须哄好他,绝不能让他不痛快。",
+      "对面那个吴总——合作方。他不出钱,咱这事儿就黄了。给他敬酒要勤,但别太肉麻,他精着呢。",
+      "看见旁边那个戴金链子的?宝宝。他姐夫是某厅副厅长。今晚他要是不高兴,主任脸都得变。",
+      "你别多嘴。主任问你什么,你回什么。别自作聪明。",
+      "酒能喝多少喝多少。给老板省钱,不是今晚这个时候。",
+      "记住:今晚我们是求人办事。每个字都给我掂量着说。"
+    ],
+    gmContext: "玩家来这桌的目的是替公司向李主任求一份项目批文。AI 应反映这种'有求于人'的压力——主任偶尔暗示掌握生杀大权(\"嗯...这事儿啊,得看看\"),吴总作为合作方旁观,关系户偶尔暗示自己的话语权。玩家行为应被这个目标驱动评估。"
+  },
+  promotion: {
+    name: "升职亮相",
+    teaser: "副总把你带来亮相,这一晚定你前程",
+    pressure: "你的下一步台阶都看今晚",
+    dialogue: [
+      "小李,跟你说,这次饭局是你升职的关键。",
+      "我跟集团那边吹了你大半年了,今晚就是带你来'亮相'的。",
+      "李主任退居二线了,但人脉广。他点头,你才能动。",
+      "吴总跟集团关系密切,他要是觉得你这小伙子不错,后面机会有的是。",
+      "宝宝是个变数。他姐夫管人事——不用奉承,但绝不能得罪。",
+      "你今晚的任务:让所有人都记住——'我们小李这小伙子,不错。'",
+      "别多喝。喝多了说错话,我半年布局白费。",
+      "进去吧。深呼吸。"
+    ],
+    gmContext: "玩家是被副总带来'亮相'的,所有人都在评估他是否值得提拔。AI 应反映这种'被检视'的氛围——主任会试探玩家见识(突然问\"小李,你怎么看?\"),吴总会观察玩家应变,副总会替玩家圆场或在玩家失误时尴尬。"
+  },
+  fillin: {
+    name: "替人接酒",
+    teaser: "老板临时有事,你顶包陪客,不知道全貌",
+    pressure: "别坏事就是大功",
+    dialogue: [
+      "妈的,老板那边出事走不开。",
+      "你,顶上来,顶到散席。",
+      "李主任和吴总今晚有正事要谈,具体是啥...你不用知道。",
+      "我跟你强调一遍:你的任务就是别坏事。别问东问西,别接领导话茬。",
+      "宝宝那位,看到了么?他姐夫是某厅领导。你跟他客气点就行,别热情过头,记住了么。",
+      "酒该喝喝,该装就装。今晚没你的事——这就是好事。",
+      "进去吧,别露怯。"
+    ],
+    gmContext: "玩家是临时'顶包'的下属,不知道饭局全部内情。AI 应反映这种'信息差'——主任和吴总偶尔有意味深长的对视暗示谈话内容,关系户漫不经心却暗藏锋芒,玩家容易因为不知道'内情'而踩雷。"
+  }
+};
+
+// 破冰阶段:玩家落座后必须先开口的预设选项
+const ICEBREAK_OPTIONS = [
+  "诸位领导,小李我先敬大家一杯!初来乍到,请多包涵!",
+  "李主任,我久仰大名,今天能跟您一桌,真是荣幸。",
+  "嘿嘿,这桌的菜真不错,我都不好意思先动筷。",
+  "(咳了一声) 那个...呃...我...先自我介绍一下吧。"
+];
+
 // ============ Markdown 渲染助手 ============
 function renderRichText(text) {
   const paragraphs = text.trim().split(/\n\s*\n/);
@@ -269,6 +328,11 @@ export default function BanquetSimulator() {
   const [memory, setMemory] = useState(initMemory());
   // 浮动通知队列(用于态度/状态变化的视觉提示)
   const [toasts, setToasts] = useState([]);
+
+  // 剧本选择
+  const [scenario, setScenario] = useState(null);
+  // 破冰阶段:玩家输入框
+  const [icebreakInput, setIcebreakInput] = useState("");
 
   const scrollRef = useRef(null);
 
@@ -413,7 +477,7 @@ export default function BanquetSimulator() {
 
 【11个角色】
 ${charList}
-
+${scenario && SCENARIOS[scenario] ? `\n【今晚的剧本】${SCENARIOS[scenario].name} (${SCENARIOS[scenario].pressure})\n${SCENARIOS[scenario].gmContext}\n` : ""}
 【当前菜品】第${dishIdx+1}/${totalDishes}道: ${currentDish.name} · ${currentDish.note} ${orientInfo}
 
 【当前分数】谄媚${scores.flattery} 猥琐${scores.lewdness} 人格${scores.dignity}
@@ -422,7 +486,11 @@ ${memorySection}【最近对话】
 ${recentHistory || "(新菜刚上桌,无对话历史。所有角色的注意力立刻转移到这道新菜上,完全不要提及任何之前的菜品。)"}
 
 【刚刚发生】
-${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation ? `**注意菜品摆放朝向: ${currentDish.orientation}**(这本身就是社交信号,可被角色拿来做文章)。` : ""}生成场景+2-3角色反应。` : `玩家(小李)说: "${userAction}"`}
+${isFirstDish && userAction
+  ? `玩家(小李)刚刚落座,主动开口破冰说: "${userAction}"。服务员同时端上第一道菜"${currentDish.name}"。请生成场景+2-3角色反应——这些反应既要回应玩家的开场白(评判其得体/谄媚/失态程度),也要反映新菜上桌的氛围。`
+  : isNewDish
+    ? `服务员端上"${currentDish.name}"。${currentDish.orientation ? `**注意菜品摆放朝向: ${currentDish.orientation}**(这本身就是社交信号,可被角色拿来做文章)。` : ""}生成场景+2-3角色反应。`
+    : `玩家(小李)说: "${userAction}"`}
 
 【突发事件机制】约 30-40% 几率插入突发事件(新菜上桌或中间轮次都可触发):
 - force_toast: 某人强制敬酒,玩家必须接(干杯/拒绝/想办法躲)
@@ -479,7 +547,7 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
     try {
       const parsed = await callBackend(sysPrompt, userMsg);
       const newHistory = [...history];
-      if (!isNewDish && userAction) newHistory.push({ type: "user", text: userAction });
+      if (userAction) newHistory.push({ type: "user", text: userAction });
       if (parsed.narration) newHistory.push({ type: "narration", text: parsed.narration });
       // 事件单独高亮
       if (parsed.event && parsed.event.title) {
@@ -628,9 +696,11 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
     setTimeout(() => callGM(null, true), 100);
   };
 
-  // 从 intro 进入座位选择阶段
+  // 从 intro 进入剧本选择(briefing)阶段
   const startGame = () => {
-    setPhase("seating");
+    setPhase("briefing");
+    setScenario(null);
+    setIcebreakInput("");
     setMemory(initMemory());
     setToasts([]);
     setHistory([]);
@@ -638,6 +708,16 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
     setScoreLog([]);
     setDishIdx(0);
     setTurnInDish(0);
+  };
+
+  // 选择剧本(briefing 阶段内部)
+  const chooseScenario = (key) => {
+    if (SCENARIOS[key]) setScenario(key);
+  };
+
+  // 看完叮嘱,进入座位选择
+  const proceedToSeating = () => {
+    setPhase("seating");
   };
 
   // 浮动 toast helper - 错落出现
@@ -718,8 +798,7 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
       { type: "narration", text: "张副总不耐烦地叹了口气,用下巴朝靠近门口的位置指了指:'你坐那。' 你乖乖坐下,脸有点发烫。其他人没说话,但也没看你——你被默认为'安全的低位'。" }
     ]);
 
-    setPhase("playing");
-    setTimeout(() => callGM(null, true), 200);
+    setPhase("icebreak");
   };
 
   // 应用 AI 生成的座位选择结果
@@ -779,8 +858,17 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
     ]);
 
     setLoading(false);
+    setPhase("icebreak");
+  };
+
+  // 玩家破冰发言后进入第一道菜
+  const breakIce = (opening) => {
+    const text = (opening || "").trim();
+    if (!text) return;
+    setIcebreakInput("");
     setPhase("playing");
-    setTimeout(() => callGM(null, true), 300);
+    // 直接把破冰开场白作为第一道菜的 user 输入,callGM 内部会处理 isFirstDish + userAction
+    setTimeout(() => callGM(text, true), 100);
   };
 
   const generateFinalReport = async () => {
@@ -825,6 +913,7 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
     setScores({ flattery: 0, lewdness: 0, dignity: 100 }); setScoreLog([]);
     setInput(""); setError(null); setFinalReport(null);
     setMemory(initMemory()); setToasts([]);
+    setScenario(null); setIcebreakInput("");
   };
 
   // ============ 圆桌 SVG ============
@@ -1085,6 +1174,100 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
           </div>
         )}
 
+        {/* ============ BRIEFING 阶段:剧本选择 + 副总叮嘱 ============ */}
+        {phase === "briefing" && !scenario && (
+          <div className="min-h-[80vh] flex flex-col items-center justify-center py-10">
+            <div className="text-xs tracking-[0.4em] mb-3" style={{ color: "#9c8068" }}>· 包间门口 · 张副总拽着你的胳膊 ·</div>
+            <h2 className="text-4xl md:text-5xl mb-4 text-center" style={{
+              fontFamily: "'Ma Shan Zheng', cursive", color: "#c9a558",
+              textShadow: "0 0 20px rgba(201,165,88,0.3)"
+            }}>今晚是来干嘛的?</h2>
+            <p className="max-w-xl text-center mb-8 text-sm leading-relaxed" style={{
+              color: "#9c8068", fontFamily: "'Noto Sans SC', sans-serif"
+            }}>
+              选择今晚的剧本——这决定了整局的张力和你的目标。
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-4xl w-full px-4" style={{
+              fontFamily: "'Noto Sans SC', sans-serif"
+            }}>
+              {Object.entries(SCENARIOS).map(([key, sc]) => (
+                <button key={key} onClick={() => chooseScenario(key)}
+                  className="text-left p-4 rounded-lg transition-all hover:scale-[1.03]"
+                  style={{
+                    background: "rgba(0,0,0,0.4)",
+                    border: "1px solid #5c3a2a",
+                    boxShadow: "0 0 12px rgba(201,165,88,0.08)"
+                  }}>
+                  <div className="mb-2" style={{
+                    fontFamily: "'Ma Shan Zheng', cursive",
+                    fontSize: "1.5rem", color: "#c9a558"
+                  }}>{sc.name}</div>
+                  <div className="text-xs leading-relaxed mb-2" style={{ color: "#e8d5a8" }}>
+                    {sc.teaser}
+                  </div>
+                  <div className="text-xs italic" style={{ color: "#a8748a" }}>
+                    压力源: {sc.pressure}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* BRIEFING 阶段:副总走廊叮嘱(剧本选完后展示对话) */}
+        {phase === "briefing" && scenario && (
+          <div className="min-h-[80vh] flex flex-col items-center py-10 max-w-2xl mx-auto">
+            <div className="text-xs tracking-[0.4em] mb-2" style={{ color: "#9c8068" }}>· 包间外的走廊 ·</div>
+            <h2 className="text-3xl mb-1 text-center" style={{
+              fontFamily: "'Ma Shan Zheng', cursive", color: "#c9a558"
+            }}>{SCENARIOS[scenario].name}</h2>
+            <p className="text-xs italic mb-6 text-center" style={{ color: "#a8748a" }}>
+              · 张副总把你拽到一边,压低声音 ·
+            </p>
+
+            <div className="w-full space-y-3 mb-6">
+              {SCENARIOS[scenario].dialogue.map((line, i) => (
+                <div key={i} className="flex gap-2" style={{
+                  animation: `toast-in 0.4s ease-out ${i * 0.1}s both`
+                }}>
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                    style={{ background: CHARACTERS.fuzong.color, color: "#fff" }}>副</div>
+                  <div className="flex-1">
+                    {i === 0 && (
+                      <div className="text-xs mb-1" style={{
+                        color: CHARACTERS.fuzong.color, fontWeight: 700,
+                        fontFamily: "'Noto Sans SC', sans-serif"
+                      }}>张副总</div>
+                    )}
+                    <div className="px-3 py-2 rounded-lg inline-block max-w-full" style={{
+                      background: "rgba(255,255,255,0.05)", color: "#e8d5a8",
+                      fontFamily: "'Noto Sans SC', sans-serif", fontSize: "0.9rem", lineHeight: 1.6
+                    }}>{line}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => setScenario(null)}
+                className="px-4 py-2 rounded text-xs transition-all hover:opacity-80"
+                style={{ background: "transparent", color: "#9c8068", border: "1px solid #5c3a2a", fontFamily: "'Noto Sans SC', sans-serif" }}>
+                ← 重选剧本
+              </button>
+              <button onClick={proceedToSeating}
+                className="px-6 py-2 rounded text-sm transition-all hover:scale-105"
+                style={{
+                  background: "linear-gradient(135deg, #c9a558 0%, #a8842d 100%)",
+                  color: "#2a1208", fontFamily: "'Noto Serif SC', serif", fontWeight: 700,
+                  boxShadow: "0 4px 14px rgba(201,165,88,0.3)"
+                }}>
+                深呼吸,推门进去 →
+              </button>
+            </div>
+          </div>
+        )}
+
         {phase === "seating" && (
           <div className="min-h-[80vh] flex flex-col items-center justify-center py-10">
             <div className="text-xs tracking-[0.4em] mb-3" style={{ color: "#9c8068" }}>· 你站在包间门口 ·</div>
@@ -1203,6 +1386,71 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
             <p className="text-xs italic mt-3 max-w-md text-center" style={{ color: "#7a6b4f" }}>
               (这个选项也有代价,只是相对小一点)
             </p>
+          </div>
+        )}
+
+        {/* ============ ICEBREAK 阶段:破冰发言 ============ */}
+        {phase === "icebreak" && (
+          <div className="min-h-[80vh] flex flex-col items-center justify-center py-10 max-w-2xl mx-auto px-4">
+            <div className="text-xs tracking-[0.4em] mb-3" style={{ color: "#9c8068" }}>· 你坐下后,包间陷入凝固般的安静 ·</div>
+            <h2 className="text-4xl md:text-5xl mb-3 text-center" style={{
+              fontFamily: "'Ma Shan Zheng', cursive", color: "#c9a558",
+              textShadow: "0 0 20px rgba(201,165,88,0.3)"
+            }}>该你开口了</h2>
+            <p className="text-sm text-center mb-2 leading-relaxed" style={{
+              color: "#e8d5a8", fontFamily: "'Noto Sans SC', sans-serif"
+            }}>
+              所有人的目光都在你身上。张副总用脚踢了踢你的脚踝。
+            </p>
+            <p className="text-xs italic mb-8 text-center" style={{ color: "#a8748a" }}>
+              选一个开场白,或者自己打——你的第一句话决定了底色。
+            </p>
+
+            {/* 显示已发生的入座叙事(给玩家上下文) */}
+            <div className="w-full mb-8 p-3 rounded-lg space-y-2 text-xs italic" style={{
+              background: "rgba(0,0,0,0.3)", border: "1px solid #5c3a2a",
+              color: "#9c8068", fontFamily: "'Noto Sans SC', sans-serif"
+            }}>
+              {history.map((h, i) => h.type === "narration" && (
+                <div key={i}>· {h.text}</div>
+              ))}
+            </div>
+
+            {/* 预设选项 */}
+            <div className="w-full space-y-2 mb-4" style={{ fontFamily: "'Noto Sans SC', sans-serif" }}>
+              {ICEBREAK_OPTIONS.map((opt, i) => (
+                <button key={i} onClick={() => breakIce(opt)}
+                  className="w-full text-left px-4 py-3 rounded-lg transition-all hover:scale-[1.01]"
+                  style={{
+                    background: "rgba(0,0,0,0.3)", color: "#e8d5a8",
+                    border: "1px solid #5c3a2a", fontSize: "0.9rem"
+                  }}>
+                  {opt}
+                </button>
+              ))}
+            </div>
+
+            <div className="text-xs my-3" style={{ color: "#7a6b4f" }}>或</div>
+
+            {/* 自由输入 */}
+            <div className="w-full flex gap-2">
+              <input
+                value={icebreakInput}
+                onChange={e => setIcebreakInput(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && breakIce(icebreakInput)}
+                placeholder="自己打一句..."
+                className="flex-1 px-3 py-2 rounded text-sm outline-none"
+                style={{
+                  background: "rgba(0,0,0,0.4)", color: "#e8d5a8",
+                  border: "1px solid #5c3a2a", fontFamily: "'Noto Sans SC', sans-serif"
+                }}
+              />
+              <button onClick={() => breakIce(icebreakInput)} disabled={!icebreakInput.trim()}
+                className="px-4 rounded transition-all disabled:opacity-40"
+                style={{ background: "#c9a558", color: "#2a1208" }}>
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
 
