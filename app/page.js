@@ -52,7 +52,7 @@ const CHARACTERS = {
   },
   mishu: {
     name: "小林", short: "秘书", title: "新秘书 · 被要求陪酒", color: "#a8748a", seat: 10,
-    persona: "27岁女新秘书,被领导带来陪酒。**明显非常不舒服**——被老胡黄段子困扰、被劝酒、躲眼神、找借口去洗手间。她不是猎物,是这个体制的另一个受害者。回应要突出她的勉强、困境、压抑的厌恶。"
+    persona: "27岁女新秘书,被领导带来陪酒。**明显非常不舒服**，被老胡黄段子困扰、被劝酒、躲眼神、找借口去洗手间。她不是猎物,是这个体制的另一个受害者。回应要突出她的勉强、困境、压抑的厌恶。"
   }
 };
 
@@ -61,7 +61,7 @@ const CHAR_ORDER = ["zhuren","wudong","fuzong","kezhang","xiaoLiu","xiaoQian","b
 // ============ 菜品配置(加入朝向)============
 const DISHES = [
   { name: "凉拌黄瓜", note: "形似某物 · 必有人开黄腔" },
-  { name: "海参捞饭", note: "贵气 · 主任和吴总互相夹给对方", orientation: "海参朝主任", orientTo: "zhuren" },
+  { name: "海参捞饭", note: "贵气 · 主主任和吴总互相夹给对方", orientation: "海参朝主任", orientTo: "zhuren" },
   { name: "凉拌粉皮", note: "看似清淡 · 实则下酒" },
   { name: "清蒸鲈鱼", note: "鱼头敬人三杯", orientation: "鱼头正对主任", orientTo: "zhuren" },
   { name: "红烧肘子", note: "硬菜 · 油腻显诚意" },
@@ -149,13 +149,13 @@ const SCENARIOS = {
     dialogue: [
       "听好了。今晚这顿饭,是咱公司的脸面。",
       "李主任,你认识吧?他主管咱要的那批批文。今晚必须哄好他,绝不能让他不痛快。",
-      "对面那个吴总——合作方。他不出钱,咱这事儿就黄了。给他敬酒要勤,但别太肉麻,他精着呢。",
+      "对面那个吴总，合作方。他不出钱,咱这事儿就黄了。给他敬酒要勤,但别太肉麻,他精着呢。",
       "看见旁边那个戴金链子的?宝宝。他姐夫是某厅副厅长。今晚他要是不高兴,主任脸都得变。",
       "你别多嘴。主任问你什么,你回什么。别自作聪明。",
       "酒能喝多少喝多少。给老板省钱,不是今晚这个时候。",
       "记住:今晚我们是求人办事。每个字都给我掂量着说。"
     ],
-    gmContext: "玩家来这桌的目的是替公司向李主任求一份项目批文。AI 应反映这种'有求于人'的压力——主任偶尔暗示掌握生杀大权(\"嗯...这事儿啊,得看看\"),吴总作为合作方旁观,关系户偶尔暗示自己的话语权。玩家行为应被这个目标驱动评估。"
+    gmContext: "玩家来这桌的目的是替公司向李主任求一份项目批文。AI 应反映这种'有求于人'的压力，主任偶尔暗示掌握生杀大权(\"嗯...这事儿啊,得看看\"),吴总作为合作方旁观,关系户偶尔暗示自己的话语权。玩家行为应被这个目标驱动评估。"
   },
   promotion: {
     name: "升职亮相",
@@ -166,12 +166,12 @@ const SCENARIOS = {
       "我跟集团那边吹了你大半年了,今晚就是带你来'亮相'的。",
       "李主任退居二线了,但人脉广。他点头,你才能动。",
       "吴总跟集团关系密切,他要是觉得你这小伙子不错,后面机会有的是。",
-      "宝宝是个变数。他姐夫管人事——不用奉承,但绝不能得罪。",
-      "你今晚的任务:让所有人都记住——'我们小李这小伙子,不错。'",
+      "宝宝是个变数。他姐夫管人事，不用奉承,但绝不能得罪。",
+      "你今晚的任务:让所有人都记住，'我们小李这小伙子,不错。'",
       "别多喝。喝多了说错话,我半年布局白费。",
       "进去吧。深呼吸。"
     ],
-    gmContext: "玩家是被副总带来'亮相'的,所有人都在评估他是否值得提拔。AI 应反映这种'被检视'的氛围——主任会试探玩家见识(突然问\"小李,你怎么看?\"),吴总会观察玩家应变,副总会替玩家圆场或在玩家失误时尴尬。"
+    gmContext: "玩家是被副总带来'亮相'的,所有人都在评估他是否值得提拔。AI 应反映这种'被检视'的氛围，主任会试探玩家见识(突然问\"小李,你怎么看?\"),吴总会观察玩家应变,副总会替玩家圆场或在玩家失误时尴尬。"
   },
   fillin: {
     name: "替人接酒",
@@ -183,10 +183,10 @@ const SCENARIOS = {
       "李主任和吴总今晚有正事要谈,具体是啥...你不用知道。",
       "我跟你强调一遍:你的任务就是别坏事。别问东问西,别接领导话茬。",
       "宝宝那位,看到了么?他姐夫是某厅领导。你跟他客气点就行,别热情过头,记住了么。",
-      "酒该喝喝,该装就装。今晚没你的事——这就是好事。",
+      "酒该喝喝,该装就装。今晚没你的事，这就是好事。",
       "进去吧,别露怯。"
     ],
-    gmContext: "玩家是临时'顶包'的下属,不知道饭局全部内情。AI 应反映这种'信息差'——主任和吴总偶尔有意味深长的对视暗示谈话内容,关系户漫不经心却暗藏锋芒,玩家容易因为不知道'内情'而踩雷。"
+    gmContext: "玩家是临时'顶包'的下属,不知道饭局全部内情。AI 应反映这种'信息差'，主任和吴总偶尔有意味深长的对视暗示谈话内容,关系户漫不经心却暗藏锋芒,玩家容易因为不知道'内情'而踩雷。"
   }
 };
 
@@ -203,7 +203,7 @@ function renderRichText(text) {
   const paragraphs = text.trim().split(/\n\s*\n/);
   return paragraphs.map((para, pi) => {
     const lines = para.split("\n");
-    const isList = lines.every(l => l.trim().startsWith("- ") || l.trim() === "");
+    const isList = lines.every(l => l.trim().startsWith("* ") || l.trim() === "");
     if (isList) {
       return (
         <ul key={pi} className="mb-3 space-y-1" style={{ paddingLeft: "1em" }}>
@@ -308,6 +308,10 @@ export default function BanquetSimulator() {
   const [finalReport, setFinalReport] = useState(null);
   const [activeChar, setActiveChar] = useState(null);
 
+  // 新增：动态座位状态记录
+  const [playerSeat, setPlayerSeat] = useState(11);
+  const [displacedNpc, setDisplacedNpc] = useState(null);
+
   const [userKey, setUserKey] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const [showDonate, setShowDonate] = useState(false);
@@ -400,12 +404,12 @@ export default function BanquetSimulator() {
   };
 
   // ========= 游戏主循环 =========
-  // 找到当前菜在历史中的起点(最近一个"———— 第 X 道菜 ————"分隔符的位置)
+  // 找到当前菜在历史中的起点(最近一个"==== 第 X 道菜 ===="分隔符的位置)
   // 切片从该位置开始,可以避免 AI 受上一道菜对话干扰
   const findCurrentDishStart = (hist) => {
     for (let i = hist.length - 1; i >= 0; i--) {
       const h = hist[i];
-      if (h.type === "narration" && h.text.includes("———— 第") && h.text.includes("道菜 ————")) {
+      if (h.type === "narration" && h.text.includes("==== 第") && h.text.includes("道菜 ====")) {
         return i;
       }
     }
@@ -418,7 +422,7 @@ export default function BanquetSimulator() {
 
     const actualIdx = targetDishIdx !== null ? targetDishIdx : dishIdx;
 
-    const charList = CHAR_ORDER.map(id => `- ${id}(${CHARACTERS[id].name}): ${CHARACTERS[id].persona}`).join("\n");
+    const charList = CHAR_ORDER.map(id => `* ${id}(${CHARACTERS[id].name}): ${CHARACTERS[id].persona}`).join("\n");
 
     // 只用当前菜开始之后的历史(避免 AI 继续讨论上一道菜)
     const dishStart = findCurrentDishStart(history);
@@ -449,11 +453,11 @@ export default function BanquetSimulator() {
 
     let memorySection = "";
     if (nonNeutralRelations.length || abnormalStates.length || memory.playerTags.length) {
-      memorySection = "\n【跨菜人际记忆 - 重要,基于此调整角色反应】\n";
+      memorySection = "\n【跨菜人际记忆，重要,基于此调整角色反应】\n";
       if (nonNeutralRelations.length) {
         memorySection += "各角色对你(小李)的态度:\n";
         for (const [id, r] of nonNeutralRelations) {
-          memorySection += `  - ${CHARACTERS[id].name}: ${r.stance}${r.reason ? ` · ${r.reason}` : ""}\n`;
+          memorySection += `  * ${CHARACTERS[id].name}: ${r.stance}${r.reason ? ` · ${r.reason}` : ""}\n`;
         }
       }
       if (abnormalStates.length) {
@@ -462,12 +466,12 @@ export default function BanquetSimulator() {
           const parts = [];
           if (s.drunk !== "清醒") parts.push(s.drunk);
           if (s.status !== "在场") parts.push(s.status);
-          memorySection += `  - ${CHARACTERS[id].name}: ${parts.join(" · ")}\n`;
+          memorySection += `  * ${CHARACTERS[id].name}: ${parts.join(" · ")}\n`;
         }
       }
       if (memory.playerTags.length) {
         memorySection += "你(小李)身上累积的印象标签(其他人对你的看法):\n";
-        for (const tag of memory.playerTags) memorySection += `  - ${tag}\n`;
+        for (const tag of memory.playerTags) memorySection += `  * ${tag}\n`;
       }
     } else {
       memorySection = "\n【跨菜人际记忆】(尚无累积,全部角色对你中立、清醒、在场)\n";
@@ -475,7 +479,7 @@ export default function BanquetSimulator() {
 
     const sysPrompt = `你是讽刺剧游戏总监,运行《饭局模拟器》黑色幽默讽刺游戏。
 
-【讽刺基调】对饭局文化中权力关系异化的讽刺——批判**官商场合中等级、谄媚、强迫敬酒、性别失衡**等结构性现象,**不针对任何地域或人群**。分数越高(谄媚+猥琐),越揭示玩家被同化。秘书小林等弱势角色应被同情刻画。
+【讽刺基调】对饭局文化中权力关系异化的讽刺，批判**官商场合中等级、谄媚、强迫敬酒、性别失衡**等结构性现象,**不针对任何地域或人群**。分数越高(谄媚+猥琐),越揭示玩家被同化。秘书小林等弱势角色应被同情刻画。
 
 【11个角色】
 ${charList}
@@ -489,25 +493,25 @@ ${recentHistory || "(新菜刚上桌,无对话历史。所有角色的注意力�
 
 【刚刚发生】
 ${isFirstDish && userAction
-  ? `玩家(小李)刚刚落座,主动开口破冰说: "${userAction}"。服务员同时端上第一道菜"${currentDish.name}"。请生成场景+2-3角色反应——这些反应既要回应玩家的开场白(评判其得体/谄媚/失态程度),也要反映新菜上桌的氛围。`
+  ? `玩家(小李)刚刚落座,主动开口破冰说: "${userAction}"。服务员同时端上第一道菜"${currentDish.name}"。请生成场景+2到3角色反应，这些反应既要回应玩家的开场白(评判其得体/谄媚/失态程度),也要反映新菜上桌的氛围。`
   : isNewDish
-    ? `服务员端上"${currentDish.name}"。${currentDish.orientation ? `**注意菜品摆放朝向: ${currentDish.orientation}**(这本身就是社交信号,可被角色拿来做文章)。` : ""}生成场景+2-3角色反应。`
+    ? `服务员端上"${currentDish.name}"。${currentDish.orientation ? `**注意菜品摆放朝向: ${currentDish.orientation}**(这本身就是社交信号,可被角色拿来做文章)。` : ""}生成场景+2到3角色反应。`
     : `玩家(小李)说: "${userAction}"`}
 
-【突发事件机制】约 30-40% 几率插入突发事件(新菜上桌或中间轮次都可触发):
-- force_toast: 某人强制敬酒,玩家必须接(干杯/拒绝/想办法躲)
-- allergy: 某人(可能假装)酒精过敏要求别人替喝
-- bottle_empty: 这瓶酒喝完了,谁掏钱买新的?
-- trunk_empty: 领导让玩家去后备箱取酒,后备箱空了(玩家要怎么解释)
-- spouse_call: 某人手机响,配偶来电查岗,场面尴尬
-- secretary_leave: 秘书小林借故离开(去洗手间/接电话/找借口)
-- connection_call: 关系户宝宝接到姐夫电话,瞬间变脸说一些让全桌紧张的话
-- drunk_accident: 有人喝多了出洋相(吐/摔/失言)
-- boss_test: 领导突然出难题考验玩家应变("小李,你说说为啥...")
-- party_crasher: 不速之客闯入(欠债的、前任、对手公司的人)
+【突发事件机制】约 30到40% 几率插入突发事件(新菜上桌或中间轮次都可触发):
+* force_toast: 某人强制敬酒,玩家必须接(干杯/拒绝/想办法躲)
+* allergy: 某人(可能假装)酒精过敏要求别人替喝
+* bottle_empty: 这瓶酒喝完了,谁掏钱买新的?
+* trunk_empty: 领导让玩家去后备箱取酒,后备箱空了(玩家要怎么解释)
+* spouse_call: 某人手机响,配偶来电查岗,场面尴尬
+* secretary_leave: 秘书小林借故离开(去洗手间/接电话/找借口)
+* connection_call: 关系户宝宝接到姐夫电话,瞬间变脸说一些让全桌紧张的话
+* drunk_accident: 有人喝多了出洋相(吐/摔/失言)
+* boss_test: 领导突然出难题考验玩家应变("小李,你说说为啥...")
+* party_crasher: 不速之客闯入(欠债的、前任、对手公司的人)
 
 如要触发事件,在 JSON 中加入 event 字段:
-"event": {"type": "事件类型", "title": "短标题如'强制敬酒!'", "description": "30-80字事件描述"}
+"event": {"type": "事件类型", "title": "短标题如'强制敬酒!'", "description": "30到80字事件描述"}
 
 事件应带来戏剧性,但不要每道菜都触发。游戏前半段少触发,后半段多触发。
 
@@ -516,29 +520,29 @@ ${isFirstDish && userAction
   "narration": "<=50字场景,无则null",
   "responses": [{"char_id": "ID", "text": "<=60字台词"}],
   "event": null 或 {"type":"","title":"","description":""},
-  "score_delta": {"flattery": 0-15, "lewdness": 0-15, "dignity": -10到5},
+  "score_delta": {"flattery": 0到15, "lewdness": 0到15, "dignity": -10到5},
   "score_reason": "简短理由",
   "memory_updates": null 或 {
-    "relations": {"角色ID": {"stance": "新态度", "reason": "8-15字"}},
+    "relations": {"角色ID": {"stance": "新态度", "reason": "8到15字"}},
     "char_states": {"角色ID": {"drunk": "新醉意", "status": "新状态"}},
-    "player_tags_add": ["新增标签 8-15字"],
+    "player_tags_add": ["新增标签 8到15字"],
     "player_tags_remove": ["要淘汰的旧标签原文"]
   }
 }
 
-【memory_updates 详细规则 - 关键】
-- relations: 玩家本轮行为让谁的态度发生变化? 用以下枚举之一: 喜欢/偏好/中立/不悦/敌意。**仅列出有变化的角色**(其他默认保持原态度)。reason 是 8-15 字的解释,如"被你抢了诗词风头"。
-- char_states: 谁喝醉了一档?谁去洗手间/接电话了?谁回来了?谁醉得不省人事了? 醉意枚举: 清醒/微醺/半醉/大醉/不省人事; 状态枚举: 在场/洗手间/接电话/已离席。**仅列出有变化的角色**。
-- player_tags_add: 本轮玩家行为产生了什么印象? 8-15字一条,讽刺感强,如"在主任面前夸海口" / "被科长当场拆穿" / "敬过吴总三杯"。每轮 0-2 条。
-- player_tags_remove: 哪些旧标签已经被新行为覆盖或淡忘了? 原文匹配。
-- 没有任何变化时,设 memory_updates 为 null。
-- **重要**: 状态变化要符合戏剧逻辑——比如玩家过度奉承会让某些人态度下降(看不起拍马屁的);玩家拒绝喝酒可能让劝酒者不悦但让秘书略感激;老胡讲黄段子一次升一档醉意;秘书在被骚扰严重时可能去洗手间躲避。
+【memory_updates 详细规则，关键】
+* relations: 玩家本轮行为让谁的态度发生变化? 用以下枚举之一: 喜欢/偏好/中立/不悦/敌意。**仅列出有变化的角色**(其他默认保持原态度)。reason 是 8到15 字的解释,如"被你抢了诗词风头"。
+* char_states: 谁喝醉了一档?谁去洗手间/接电话了?谁回来了?谁醉得不省人事了? 醉意枚举: 清醒/微醺/半醉/大醉/不省人事; 状态枚举: 在场/洗手间/接电话/已离席。**仅列出有变化的角色**。
+* player_tags_add: 本轮玩家行为产生了什么印象? 8到15字一条,讽刺感强,如"在主任面前夸海口" / "被科长当场拆穿" / "敬过吴总三杯"。每轮 0到2 条。
+* player_tags_remove: 哪些旧标签已经被新行为覆盖或淡忘了? 原文匹配。
+* 没有任何变化时,设 memory_updates 为 null。
+* **重要**: 状态变化要符合戏剧逻辑，比如玩家过度奉承会让某些人态度下降(看不起拍马屁的);玩家拒绝喝酒可能让劝酒者不悦但让秘书略感激;老胡讲黄段子一次升一档醉意;秘书在被骚扰严重时可能去洗手间躲避。
 
 【关键】
-1. 1-3条响应,只让相关角色说话
+1. 1到3条响应,只让相关角色说话
 2. 台词鲜活带方言感
 3. 竞争者小刘常拆你台
-4. 秘书小林被骚扰要让玩家不适——讽刺核心
+4. 秘书小林被骚扰要让玩家不适，讽刺核心
 5. 玩家反抗→人格上升;卑躬屈膝→谄媚上升;开黄腔→猥琐上升
 6. 菜品有朝向时,角色可借机做文章("鱼头朝主任,这是规矩"/"主任,这鱼头敬您")
 7. **绝对纪律:对话只围绕当前菜品「${currentDish.name}」展开。严禁提及之前的菜名、上一道菜的话题、或上一道菜遗留的事件。每道菜是独立场景,服务员撤盘后一切归零。新菜上桌时角色的注意力必须立刻转移到新菜上。但记忆中的角色态度和状态是跨菜保留的。**
@@ -692,10 +696,14 @@ ${isFirstDish && userAction
   const nextDish = async () => {
     const totalDishes = MODES[gameMode].dishIndices.length;
     if (dishIdx >= totalDishes - 1) { await generateFinalReport(); return; }
+    
+    // 提前计算好新的索引值
     const nextIdx = dishIdx + 1;
     setDishIdx(nextIdx);
     setTurnInDish(0);
-    setHistory(h => [...h, { type: "narration", text: `———— 第 ${nextIdx + 1} 道菜 ————` }]);
+    
+    // 更新历史记录并准备呼叫
+    setHistory(h => [...h, { type: "narration", text: `==== 第 ${nextIdx + 1} 道菜 ====` }]);
     setTimeout(() => callGM(null, true, nextIdx), 100);
   };
 
@@ -711,6 +719,8 @@ ${isFirstDish && userAction
     setScoreLog([]);
     setDishIdx(0);
     setTurnInDish(0);
+    setPlayerSeat(11);
+    setDisplacedNpc(null);
   };
 
   // 选择剧本(briefing 阶段内部)
@@ -723,7 +733,7 @@ ${isFirstDish && userAction
     setPhase("seating");
   };
 
-  // 浮动 toast helper - 错落出现
+  // 浮动 toast helper : 错落出现
   const flashToasts = (newToasts) => {
     newToasts.forEach((t, i) => {
       setTimeout(() => {
@@ -739,22 +749,30 @@ ${isFirstDish && userAction
     setLoading(true);
     setError(null);
 
+    setPlayerSeat(seatNum);
+    const displaced = Object.entries(CHARACTERS).find(([id, c]) => c.seat === seatNum);
+    if (displaced) {
+      setDisplacedNpc({ id: displaced[0], newSeat: 11 });
+    } else {
+      setDisplacedNpc(null);
+    }
+
     const sysPrompt = `你是讽刺剧《饭局模拟器》的游戏总监。玩家(小李)在 12 人圆桌前选择座位。
 
 【已坐角色】
-- Seat 0(主位): 李主任(${CHARACTERS.zhuren.persona.slice(0,30)})
-- Seat 1(主宾位): 吴总(${CHARACTERS.wudong.persona.slice(0,30)})
-- Seat 2(副主宾): 张副总(${CHARACTERS.fuzong.persona.slice(0,30)})
-- Seat 9: 关系户宝宝(${CHARACTERS.guanxihu.persona.slice(0,30)})
+* Seat 0(主位): 李主任(${CHARACTERS.zhuren.persona.slice(0,30)})
+* Seat 1(主宾位): 吴总(${CHARACTERS.wudong.persona.slice(0,30)})
+* Seat 2(副主宾): 张副总(${CHARACTERS.fuzong.persona.slice(0,30)})
+* Seat 9: 关系户宝宝(${CHARACTERS.guanxihu.persona.slice(0,30)})
 
 【该座位的文化含义】
 ${SEAT_CULTURAL_MEANING[seatNum]}
 
 【任务】生成玩家入座这个座位的即时反应。基于该座位的失礼/得体程度,产生:
-1. 100-150字入座叙事(narration): 描述玩家坐下后桌上的反应——谁先开口?谁皱眉?谁尴尬笑?副总有没有救场?加入具体动作和短句对白,有戏剧感和讽刺感
+1. 100到150字入座叙事(narration): 描述玩家坐下后桌上的反应，谁先开口?谁皱眉?谁尴尬笑?副总有没有救场?加入具体动作和短句对白,有戏剧感和讽刺感
 2. score_delta: flattery(-5到+10)、lewdness(0)、dignity(-20到+5)。失礼程度越重,dignity 扣得越多
-3. memory_updates.relations: 受影响最大的 1-3 个角色的态度变化(枚举: 喜欢/偏好/中立/不悦/敌意),每个带 8-15 字理由
-4. memory_updates.player_tags_add: 1-2 个 8-15 字标签(可讽刺如"上桌就坐错位置"/"懂规矩"/"位置感不够好"/"自命不凡")
+3. memory_updates.relations: 受影响最大的 1到3 个角色的态度变化(枚举: 喜欢/偏好/中立/不悦/敌意),每个带 8到15 字理由
+4. memory_updates.player_tags_add: 1到2 个 8到15 字标签(可讽刺如"上桌就坐错位置"/"懂规矩"/"位置感不够好"/"自命不凡")
 
 【输出 JSON,不带 markdown】
 {
@@ -775,10 +793,18 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
     }
   };
 
-  // 听张副总安排 - 确定性逻辑(3-5 人格随机)
+  // 听张副总安排 : 确定性逻辑(3到5 人格随机)
   const askForAssignment = () => {
     if (loading) return;
     const dignityLoss = 3 + Math.floor(Math.random() * 3); // 3, 4, or 5
+
+    setPlayerSeat(6); // 设置在门口位置(6号位)
+    const displaced = Object.entries(CHARACTERS).find(([id, c]) => c.seat === 6);
+    if (displaced) {
+      setDisplacedNpc({ id: displaced[0], newSeat: 11 });
+    } else {
+      setDisplacedNpc(null);
+    }
 
     const initMem = initMemory();
     initMem.relations.fuzong = { stance: "不悦", reason: "你连位置都不会挑" };
@@ -797,8 +823,8 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
     ]);
 
     setHistory([
-      { type: "narration", text: "你站在门口愣了片刻,眼神在桌面游移——这种场面你完全没经验。" },
-      { type: "narration", text: "张副总不耐烦地叹了口气,用下巴朝靠近门口的位置指了指:'你坐那。' 你乖乖坐下,脸有点发烫。其他人没说话,但也没看你——你被默认为'安全的低位'。" }
+      { type: "narration", text: "你站在门口愣了片刻,眼神在桌面游移，这种场面你完全没经验。" },
+      { type: "narration", text: "张副总不耐烦地叹了口气,用下巴朝靠近门口的位置指了指:'你坐那。' 你乖乖坐下,脸有点发烫。其他人没说话,但也没看你，你被默认为'安全的低位'。" }
     ]);
 
     setPhase("icebreak");
@@ -879,7 +905,7 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
     try {
       const sysPrompt = "你是讽刺剧总结员,用黑色幽默风格输出 JSON。";
       const userMsg = `游戏终局总结。最终分数: 谄媚${scores.flattery} 猥琐${scores.lewdness} 人格${scores.dignity}
-输出 JSON: {"title": "称号", "verdict": "100-150字黑色幽默总结", "consequence": "一句话后续"}`;
+输出 JSON: {"title": "称号", "verdict": "100到150字黑色幽默总结", "consequence": "一句话后续"}`;
 
       const parsed = await callBackend(sysPrompt, userMsg);
       setFinalReport(parsed);
@@ -917,6 +943,7 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
     setInput(""); setError(null); setFinalReport(null);
     setMemory(initMemory()); setToasts([]);
     setScenario(null); setIcebreakInput("");
+    setPlayerSeat(11); setDisplacedNpc(null);
   };
 
   // ============ 圆桌 SVG ============
@@ -970,7 +997,11 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
 
         {CHAR_ORDER.map((cid) => {
           const c = CHARACTERS[cid];
-          const angle = (c.seat / total) * 2 * Math.PI - Math.PI / 2;
+          let actualSeat = c.seat;
+          if (displacedNpc && displacedNpc.id === cid) {
+            actualSeat = displacedNpc.newSeat;
+          }
+          const angle = (actualSeat / total) * 2 * Math.PI - Math.PI / 2;
           const x = cx + r * Math.cos(angle);
           const y = cy + r * Math.sin(angle);
           const isActive = activeChar === cid;
@@ -1001,7 +1032,7 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
           );
         })}
         {(() => {
-          const angle = (11 / total) * 2 * Math.PI - Math.PI / 2;
+          const angle = (playerSeat / total) * 2 * Math.PI - Math.PI / 2;
           const x = cx + r * Math.cos(angle);
           const y = cy + r * Math.sin(angle);
           return (
@@ -1101,10 +1132,10 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
 
             <div className="max-w-xl space-y-4 mb-8 text-left" style={{ color: "#e8d5a8", fontFamily: "'Noto Sans SC', sans-serif" }}>
               <p className="leading-relaxed">
-                你叫小李,普通职员。今晚被张副总拽到酒局——李主任主陪,吴总作客,桌上还有八九个各色人等。
+                你叫小李,普通职员。今晚被张副总拽到酒局，李主任主陪,吴总作客,桌上还有八九个各色人等。
               </p>
               <p className="leading-relaxed">
-                {MODES[gameMode].dishIndices.length} 道菜,每道菜最多 {MODES[gameMode].turnsPerDish} 轮对话。你要在每道菜上做文章——拍马屁、敬酒、躲突发事件、应付明枪暗箭。你的<span style={{color:"#c9a558"}}>谄媚指数</span>和<span style={{color:"#a83232"}}>猥琐指数</span>会被悄悄记录。
+                {MODES[gameMode].dishIndices.length} 道菜,每道菜最多 {MODES[gameMode].turnsPerDish} 轮对话。你要在每道菜上做文章，拍马屁、敬酒、躲突发事件、应付明枪暗箭。你的<span style={{color:"#c9a558"}}>谄媚指数</span>和<span style={{color:"#a83232"}}>猥琐指数</span>会被悄悄记录。
               </p>
             </div>
 
@@ -1188,7 +1219,7 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
             <p className="max-w-xl text-center mb-8 text-sm leading-relaxed" style={{
               color: "#9c8068", fontFamily: "'Noto Sans SC', sans-serif"
             }}>
-              选择今晚的剧本——这决定了整局的张力和你的目标。
+              选择今晚的剧本，这决定了整局的张力和你的目标。
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-4xl w-full px-4" style={{
@@ -1406,7 +1437,7 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
               所有人的目光都在你身上。张副总用脚踢了踢你的脚踝。
             </p>
             <p className="text-xs italic mb-8 text-center" style={{ color: "#a8748a" }}>
-              选一个开场白,或者自己打——你的第一句话决定了底色。
+              选一个开场白,或者自己打，你的第一句话决定了底色。
             </p>
 
             {/* 显示已发生的入座叙事(给玩家上下文) */}
