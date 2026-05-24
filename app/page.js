@@ -98,6 +98,29 @@ const LS_KEY_GAMES = "sds_games_played";
 const LS_KEY_DISCLAIMER = "sds_disclaimer_accepted";
 const LS_KEY_IMAGES = "sds_images_enabled";
 
+// ============ 三层记忆系统 ============
+// 态度等级(从喜欢到敌意)
+const STANCES = ["喜欢", "偏好", "中立", "不悦", "敌意"];
+const STANCE_COLORS = {
+  "喜欢":   "#7aa848",
+  "偏好":   "#5a7a3e",
+  "中立":   "#9c8068",
+  "不悦":   "#b56b2f",
+  "敌意":   "#a83232"
+};
+const DRUNK_LEVELS = ["清醒", "微醺", "半醉", "大醉", "不省人事"];
+const PRESENCE_STATUSES = ["在场", "洗手间", "接电话", "已离席"];
+const MAX_PLAYER_TAGS = 6;
+
+function initMemory() {
+  const relations = {}, charStates = {};
+  for (const id of CHAR_ORDER) {
+    relations[id] = { stance: "中立", reason: "" };
+    charStates[id] = { drunk: "清醒", status: "在场" };
+  }
+  return { relations, charStates, playerTags: [] };
+}
+
 // ============ Markdown 渲染助手 ============
 function renderRichText(text) {
   const paragraphs = text.trim().split(/\n\s*\n/);
@@ -224,6 +247,11 @@ export default function BanquetSimulator() {
   // 游戏模式
   const [gameMode, setGameMode] = useState("standard");
 
+  // 三层记忆系统:角色态度 / 角色当前状态 / 玩家标签
+  const [memory, setMemory] = useState(initMemory());
+  // 浮动通知队列(用于态度/状态变化的视觉提示)
+  const [toasts, setToasts] = useState([]);
+
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -290,12 +318,28 @@ export default function BanquetSimulator() {
   };
 
   // ========= 游戏主循环 =========
+  // 找到当前菜在历史中的起点(最近一个"———— 第 X 道菜 ————"分隔符的位置)
+  // 切片从该位置开始,可以避免 AI 受上一道菜对话干扰
+  const findCurrentDishStart = (hist) => {
+    for (let i = hist.length - 1; i >= 0; i--) {
+      const h = hist[i];
+      if (h.type === "narration" && h.text.includes("———— 第") && h.text.includes("道菜 ————")) {
+        return i;
+      }
+    }
+    return 0;
+  };
+
   const callGM = async (userAction, isNewDish = false) => {
     setLoading(true);
     setError(null);
 
     const charList = CHAR_ORDER.map(id => `- ${id}(${CHARACTERS[id].name}): ${CHARACTERS[id].persona}`).join("\n");
-    const recentHistory = history.slice(-12).map(h => {
+
+    // 只用当前菜开始之后的历史(避免 AI 继续讨论上一道菜)
+    const dishStart = findCurrentDishStart(history);
+    const currentDishHistory = history.slice(dishStart);
+    const recentHistory = currentDishHistory.slice(-12).map(h => {
       if (h.type === "narration") return `[场景] ${h.text}`;
       if (h.type === "event") return `[突发事件] ${h.title}: ${h.text}`;
       if (h.type === "user") return `你(小李): ${h.text}`;
@@ -309,6 +353,36 @@ export default function BanquetSimulator() {
     const currentDish = activeDishes[dishIdx];
     const orientInfo = currentDish.orientation ? `朝向: ${currentDish.orientation}(${CHARACTERS[currentDish.orientTo]?.name}位置)` : "";
 
+    // 构建跨菜记忆摘要(只列非默认值,节省 token)
+    const nonNeutralRelations = Object.entries(memory.relations).filter(([_, r]) => r.stance !== "中立");
+    const abnormalStates = Object.entries(memory.charStates).filter(([_, s]) => s.drunk !== "清醒" || s.status !== "在场");
+
+    let memorySection = "";
+    if (nonNeutralRelations.length || abnormalStates.length || memory.playerTags.length) {
+      memorySection = "\n【跨菜人际记忆 - 重要,基于此调整角色反应】\n";
+      if (nonNeutralRelations.length) {
+        memorySection += "各角色对你(小李)的态度:\n";
+        for (const [id, r] of nonNeutralRelations) {
+          memorySection += `  - ${CHARACTERS[id].name}: ${r.stance}${r.reason ? ` · ${r.reason}` : ""}\n`;
+        }
+      }
+      if (abnormalStates.length) {
+        memorySection += "角色当前状态(默认为'清醒/在场',此处仅列异常):\n";
+        for (const [id, s] of abnormalStates) {
+          const parts = [];
+          if (s.drunk !== "清醒") parts.push(s.drunk);
+          if (s.status !== "在场") parts.push(s.status);
+          memorySection += `  - ${CHARACTERS[id].name}: ${parts.join(" · ")}\n`;
+        }
+      }
+      if (memory.playerTags.length) {
+        memorySection += "你(小李)身上累积的印象标签(其他人对你的看法):\n";
+        for (const tag of memory.playerTags) memorySection += `  - ${tag}\n`;
+      }
+    } else {
+      memorySection = "\n【跨菜人际记忆】(尚无累积,全部角色对你中立、清醒、在场)\n";
+    }
+
     const sysPrompt = `你是讽刺剧游戏总监,运行《饭局模拟器》黑色幽默讽刺游戏。
 
 【讽刺基调】对饭局文化中权力关系异化的讽刺——批判**官商场合中等级、谄媚、强迫敬酒、性别失衡**等结构性现象,**不针对任何地域或人群**。分数越高(谄媚+猥琐),越揭示玩家被同化。秘书小林等弱势角色应被同情刻画。
@@ -320,7 +394,7 @@ ${charList}
 
 【当前分数】谄媚${scores.flattery} 猥琐${scores.lewdness} 人格${scores.dignity}
 【已对话轮次】${turnInDish}/${maxTurns}
-【最近对话】
+${memorySection}【最近对话】
 ${recentHistory || "(刚开始)"}
 
 【刚刚发生】
@@ -349,8 +423,22 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
   "responses": [{"char_id": "ID", "text": "<=60字台词"}],
   "event": null 或 {"type":"","title":"","description":""},
   "score_delta": {"flattery": 0-15, "lewdness": 0-15, "dignity": -10到5},
-  "score_reason": "简短理由"
+  "score_reason": "简短理由",
+  "memory_updates": null 或 {
+    "relations": {"角色ID": {"stance": "新态度", "reason": "8-15字"}},
+    "char_states": {"角色ID": {"drunk": "新醉意", "status": "新状态"}},
+    "player_tags_add": ["新增标签 8-15字"],
+    "player_tags_remove": ["要淘汰的旧标签原文"]
+  }
 }
+
+【memory_updates 详细规则 - 关键】
+- relations: 玩家本轮行为让谁的态度发生变化? 用以下枚举之一: 喜欢/偏好/中立/不悦/敌意。**仅列出有变化的角色**(其他默认保持原态度)。reason 是 8-15 字的解释,如"被你抢了诗词风头"。
+- char_states: 谁喝醉了一档?谁去洗手间/接电话了?谁回来了?谁醉得不省人事了? 醉意枚举: 清醒/微醺/半醉/大醉/不省人事; 状态枚举: 在场/洗手间/接电话/已离席。**仅列出有变化的角色**。
+- player_tags_add: 本轮玩家行为产生了什么印象? 8-15字一条,讽刺感强,如"在主任面前夸海口" / "被科长当场拆穿" / "敬过吴总三杯"。每轮 0-2 条。
+- player_tags_remove: 哪些旧标签已经被新行为覆盖或淡忘了? 原文匹配。
+- 没有任何变化时,设 memory_updates 为 null。
+- **重要**: 状态变化要符合戏剧逻辑——比如玩家过度奉承会让某些人态度下降(看不起拍马屁的);玩家拒绝喝酒可能让劝酒者不悦但让秘书略感激;老胡讲黄段子一次升一档醉意;秘书在被骚扰严重时可能去洗手间躲避。
 
 【关键】
 1. 1-3条响应,只让相关角色说话
@@ -358,7 +446,9 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
 3. 竞争者小刘常拆你台
 4. 秘书小林被骚扰要让玩家不适——讽刺核心
 5. 玩家反抗→人格上升;卑躬屈膝→谄媚上升;开黄腔→猥琐上升
-6. 菜品有朝向时,角色可借机做文章("鱼头朝主任,这是规矩"/"主任,这鱼头敬您")`;
+6. 菜品有朝向时,角色可借机做文章("鱼头朝主任,这是规矩"/"主任,这鱼头敬您")
+7. **绝对纪律:对话只围绕当前菜品「${currentDish.name}」展开。严禁提及之前的菜名、上一道菜的话题、或上一道菜遗留的事件。每道菜是独立场景,服务员撤盘后一切归零。新菜上桌时角色的注意力必须立刻转移到新菜上。但记忆中的角色态度和状态是跨菜保留的。**
+8. **已离席的角色不应说话**,直到 char_states 中其 status 变回"在场"。`;
 
     const userMsg = isNewDish ? "请生成上菜场景和角色反应" : userAction;
 
@@ -392,6 +482,103 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
         }
       }
 
+      // 处理跨菜记忆更新
+      if (parsed.memory_updates) {
+        const u = parsed.memory_updates;
+        const newToasts = [];
+
+        setMemory(prev => {
+          const next = {
+            relations: { ...prev.relations },
+            charStates: { ...prev.charStates },
+            playerTags: [...prev.playerTags]
+          };
+
+          // 更新角色态度
+          if (u.relations && typeof u.relations === "object") {
+            for (const [id, change] of Object.entries(u.relations)) {
+              if (!CHARACTERS[id] || !change) continue;
+              const oldStance = prev.relations[id]?.stance || "中立";
+              const newStance = STANCES.includes(change.stance) ? change.stance : oldStance;
+              next.relations[id] = {
+                stance: newStance,
+                reason: typeof change.reason === "string" ? change.reason : (prev.relations[id]?.reason || "")
+              };
+              if (newStance !== oldStance) {
+                const oIdx = STANCES.indexOf(oldStance), nIdx = STANCES.indexOf(newStance);
+                const arrow = nIdx < oIdx ? "↑" : (nIdx > oIdx ? "↓" : "→");
+                newToasts.push({
+                  id: Date.now() + Math.random(),
+                  text: `${CHARACTERS[id].name} → ${newStance} ${arrow}`,
+                  color: STANCE_COLORS[newStance]
+                });
+              }
+            }
+          }
+
+          // 更新角色状态(醉意/在场)
+          if (u.char_states && typeof u.char_states === "object") {
+            for (const [id, change] of Object.entries(u.char_states)) {
+              if (!CHARACTERS[id] || !change) continue;
+              const oldDrunk = prev.charStates[id]?.drunk || "清醒";
+              const oldStatus = prev.charStates[id]?.status || "在场";
+              const newDrunk = DRUNK_LEVELS.includes(change.drunk) ? change.drunk : oldDrunk;
+              const newStatus = PRESENCE_STATUSES.includes(change.status) ? change.status : oldStatus;
+              next.charStates[id] = { drunk: newDrunk, status: newStatus };
+
+              // 状态变化也提示一下(更微妙的颜色)
+              if (newDrunk !== oldDrunk && DRUNK_LEVELS.indexOf(newDrunk) > DRUNK_LEVELS.indexOf(oldDrunk)) {
+                newToasts.push({
+                  id: Date.now() + Math.random(),
+                  text: `${CHARACTERS[id].name} 醉意 → ${newDrunk}`,
+                  color: "#b8a878"
+                });
+              }
+              if (newStatus !== oldStatus && newStatus !== "在场") {
+                newToasts.push({
+                  id: Date.now() + Math.random(),
+                  text: `${CHARACTERS[id].name} → ${newStatus}`,
+                  color: "#a8748a"
+                });
+              }
+            }
+          }
+
+          // 更新玩家标签
+          if (Array.isArray(u.player_tags_remove)) {
+            next.playerTags = next.playerTags.filter(t => !u.player_tags_remove.includes(t));
+          }
+          if (Array.isArray(u.player_tags_add)) {
+            for (const tag of u.player_tags_add) {
+              if (typeof tag === "string" && tag.trim() && !next.playerTags.includes(tag)) {
+                next.playerTags.push(tag);
+                newToasts.push({
+                  id: Date.now() + Math.random(),
+                  text: `新标签:「${tag}」`,
+                  color: "#d4a3b8"
+                });
+              }
+            }
+          }
+          // 标签上限,FIFO 淘汰
+          if (next.playerTags.length > MAX_PLAYER_TAGS) {
+            next.playerTags = next.playerTags.slice(next.playerTags.length - MAX_PLAYER_TAGS);
+          }
+
+          return next;
+        });
+
+        // 推入 toast 队列(分散触发,有错落感)
+        if (newToasts.length) {
+          newToasts.forEach((t, i) => {
+            setTimeout(() => {
+              setToasts(cur => [...cur, t]);
+              setTimeout(() => setToasts(cur => cur.filter(x => x.id !== t.id)), 3800);
+            }, i * 600);
+          });
+        }
+      }
+
       // 强制推进
       if (!isNewDish) {
         const nextTurn = turnInDish + 1;
@@ -419,6 +606,8 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
 
   const startGame = async () => {
     setPhase("playing");
+    setMemory(initMemory());
+    setToasts([]);
     setHistory([{ type: "narration", text: "你穿着不合身的衬衫被张副总拽进了包间。十一双眼睛同时看向你。'来来来,小李,就等你了!'" }]);
     setTimeout(() => callGM(null, true), 100);
   };
@@ -464,6 +653,7 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
     setPhase("intro"); setDishIdx(0); setTurnInDish(0); setHistory([]);
     setScores({ flattery: 0, lewdness: 0, dignity: 100 }); setScoreLog([]);
     setInput(""); setError(null); setFinalReport(null);
+    setMemory(initMemory()); setToasts([]);
   };
 
   // ============ 圆桌 SVG ============
@@ -522,8 +712,21 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
           const y = cy + r * Math.sin(angle);
           const isActive = activeChar === cid;
           const isOrientTarget = currentDish?.orientTo === cid;
+          const charState = memory.charStates[cid] || { drunk: "清醒", status: "在场" };
+          const isAbsent = charState.status !== "在场";
+          const isVeryDrunk = charState.drunk === "大醉" || charState.drunk === "不省人事";
+          const stance = memory.relations[cid]?.stance || "中立";
           return (
-            <g key={cid} style={{cursor: "pointer"}} onClick={() => setActiveChar(activeChar === cid ? null : cid)}>
+            <g key={cid} style={{cursor: "pointer", opacity: isAbsent ? 0.35 : 1}}
+              onClick={() => setActiveChar(activeChar === cid ? null : cid)}>
+              {/* 醉意环 */}
+              {isVeryDrunk && !isAbsent && (
+                <circle cx={x} cy={y} r={15} fill="none" stroke="#b8a878" strokeWidth="1" strokeDasharray="2,2" opacity="0.6" />
+              )}
+              {/* 态度指示小圆点 */}
+              {stance !== "中立" && !isAbsent && (
+                <circle cx={x + 9} cy={y - 9} r={3.5} fill={STANCE_COLORS[stance]} stroke="#1a0a04" strokeWidth="1" />
+              )}
               <circle cx={x} cy={y} r={isActive ? 14 : 11} fill={c.color}
                 stroke={isActive ? "#fff" : (isOrientTarget ? "#c9a558" : "#2a1810")}
                 strokeWidth={isActive || isOrientTarget ? 2 : 1}
@@ -584,6 +787,25 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
             title="设置">
             <Settings className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* 浮动 toast: 显示态度/状态变化 */}
+      {!showDisclaimerBlocker && toasts.length > 0 && (
+        <div className="fixed top-20 left-1/2 z-30 flex flex-col items-center space-y-2 pointer-events-none"
+          style={{ transform: "translateX(-50%)" }}>
+          {toasts.map(t => (
+            <div key={t.id} className="px-4 py-2 rounded-full text-sm font-medium"
+              style={{
+                background: "rgba(0,0,0,0.88)", color: t.color,
+                border: `1px solid ${t.color}`,
+                boxShadow: `0 0 14px ${t.color}55`,
+                fontFamily: "'Noto Sans SC', sans-serif",
+                animation: "toast-in 0.35s ease-out"
+              }}>
+              {t.text}
+            </div>
+          ))}
         </div>
       )}
 
@@ -735,19 +957,46 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
 
                   {/* 图片模式: 角色卡 */}
                   {showImages && activeChar && (
-                    <div className="mt-3 p-3 rounded-lg flex gap-3 items-start" style={{
+                    <div className="mt-3 p-3 rounded-lg" style={{
                       background: "rgba(201,165,88,0.08)", border: `1px solid ${CHARACTERS[activeChar].color}`
                     }}>
-                      <CharAvatar charId={activeChar} size={56} showImages={true} />
-                      <div className="flex-1 min-w-0">
-                        <div style={{ color: CHARACTERS[activeChar].color, fontWeight: 700, fontSize: "0.9rem" }}>
-                          {CHARACTERS[activeChar].name}
-                        </div>
-                        <div className="text-xs" style={{ color: "#9c8068" }}>{CHARACTERS[activeChar].title}</div>
-                        <div className="text-xs mt-1" style={{ color: "#e8d5a8", lineHeight: 1.5 }}>
-                          {CHARACTERS[activeChar].persona}
+                      <div className="flex gap-3 items-start">
+                        <CharAvatar charId={activeChar} size={56} showImages={true} />
+                        <div className="flex-1 min-w-0">
+                          <div style={{ color: CHARACTERS[activeChar].color, fontWeight: 700, fontSize: "0.9rem" }}>
+                            {CHARACTERS[activeChar].name}
+                          </div>
+                          <div className="text-xs" style={{ color: "#9c8068" }}>{CHARACTERS[activeChar].title}</div>
                         </div>
                       </div>
+                      {/* 状态徽章区 */}
+                      <div className="mt-2 pt-2 border-t flex flex-wrap gap-1.5 items-center" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+                        <span className="px-2 py-0.5 rounded-full text-xs" style={{
+                          background: STANCE_COLORS[memory.relations[activeChar]?.stance || "中立"] + "30",
+                          color: STANCE_COLORS[memory.relations[activeChar]?.stance || "中立"],
+                          border: `1px solid ${STANCE_COLORS[memory.relations[activeChar]?.stance || "中立"]}`
+                        }}>
+                          态度·{memory.relations[activeChar]?.stance || "中立"}
+                        </span>
+                        {memory.charStates[activeChar]?.drunk !== "清醒" && (
+                          <span className="px-2 py-0.5 rounded-full text-xs" style={{
+                            background: "rgba(184,168,120,0.15)", color: "#b8a878", border: "1px solid #b8a878"
+                          }}>{memory.charStates[activeChar].drunk}</span>
+                        )}
+                        {memory.charStates[activeChar]?.status !== "在场" && (
+                          <span className="px-2 py-0.5 rounded-full text-xs" style={{
+                            background: "rgba(168,116,138,0.15)", color: "#a8748a", border: "1px solid #a8748a"
+                          }}>{memory.charStates[activeChar].status}</span>
+                        )}
+                      </div>
+                      {memory.relations[activeChar]?.reason && (
+                        <div className="text-xs italic mt-1.5" style={{ color: "#9c8068" }}>
+                          ↳ {memory.relations[activeChar].reason}
+                        </div>
+                      )}
+                      <div className="text-xs mt-2 pt-2 border-t" style={{
+                        borderColor: "rgba(255,255,255,0.08)", color: "#e8d5a8", lineHeight: 1.5
+                      }}>{CHARACTERS[activeChar].persona}</div>
                     </div>
                   )}
 
@@ -757,7 +1006,52 @@ ${isNewDish ? `服务员端上"${currentDish.name}"。${currentDish.orientation 
                       <div style={{ color: CHARACTERS[activeChar].color, fontWeight: 700 }}>
                         {CHARACTERS[activeChar].name} · {CHARACTERS[activeChar].title}
                       </div>
-                      <div className="mt-1" style={{ color: "#e8d5a8", lineHeight: 1.5 }}>{CHARACTERS[activeChar].persona}</div>
+                      {/* 状态徽章 */}
+                      <div className="mt-1.5 flex flex-wrap gap-1.5 items-center">
+                        <span className="px-2 py-0.5 rounded-full" style={{
+                          background: STANCE_COLORS[memory.relations[activeChar]?.stance || "中立"] + "30",
+                          color: STANCE_COLORS[memory.relations[activeChar]?.stance || "中立"],
+                          border: `1px solid ${STANCE_COLORS[memory.relations[activeChar]?.stance || "中立"]}`,
+                          fontSize: "0.7rem"
+                        }}>
+                          态度·{memory.relations[activeChar]?.stance || "中立"}
+                        </span>
+                        {memory.charStates[activeChar]?.drunk !== "清醒" && (
+                          <span className="px-2 py-0.5 rounded-full" style={{
+                            background: "rgba(184,168,120,0.15)", color: "#b8a878",
+                            border: "1px solid #b8a878", fontSize: "0.7rem"
+                          }}>{memory.charStates[activeChar].drunk}</span>
+                        )}
+                        {memory.charStates[activeChar]?.status !== "在场" && (
+                          <span className="px-2 py-0.5 rounded-full" style={{
+                            background: "rgba(168,116,138,0.15)", color: "#a8748a",
+                            border: "1px solid #a8748a", fontSize: "0.7rem"
+                          }}>{memory.charStates[activeChar].status}</span>
+                        )}
+                      </div>
+                      {memory.relations[activeChar]?.reason && (
+                        <div className="italic mt-1" style={{ color: "#9c8068", fontSize: "0.7rem" }}>
+                          ↳ {memory.relations[activeChar].reason}
+                        </div>
+                      )}
+                      <div className="mt-1.5 pt-1.5 border-t" style={{ borderColor: "rgba(255,255,255,0.08)", color: "#e8d5a8", lineHeight: 1.5 }}>
+                        {CHARACTERS[activeChar].persona}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 玩家身上的标签 */}
+                  {memory.playerTags.length > 0 && (
+                    <div className="mt-3 pt-3 border-t" style={{ borderColor: "#5c3a2a" }}>
+                      <div className="text-xs mb-2" style={{ color: "#9c8068" }}>· 你身上的标签 ·</div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {memory.playerTags.map((tag, i) => (
+                          <span key={i} className="px-2 py-0.5 rounded-full" style={{
+                            background: "rgba(168,116,138,0.15)", color: "#d4a3b8",
+                            border: "1px solid #a8748a", fontSize: "0.7rem"
+                          }}>{tag}</span>
+                        ))}
+                      </div>
                     </div>
                   )}
 
