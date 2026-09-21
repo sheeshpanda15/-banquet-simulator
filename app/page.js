@@ -11,47 +11,47 @@ import {
 // ============ 角色配置 ============
 const CHARACTERS = {
   zhuren: {
-    name: "李主任", short: "主任", title: "正厅级老干部 · 退居二线", color: "#c9a558", seat: 0,
+    name: "李主任", short: "主任", title: "正厅级老干部 · 退居二线", color: "#d0aa63", seat: 0,
     persona: "62岁正厅级老干部。说话慢条斯理,常停顿,爱用'这个嘛...'、'我跟你讲'、'当年我在...'开头。爱暗示人脉('上次跟省里X厅长吃饭')。是桌上最大的领导,必须被先敬。"
   },
   wudong: {
-    name: "吴总", short: "吴总", title: "实业集团董事长 · 真金主", color: "#a83232", seat: 1,
+    name: "吴总", short: "吴总", title: "实业集团董事长 · 真金主", color: "#b84f4a", seat: 1,
     persona: "58岁本地最大民营企业主,真正掏钱的人。话少但每句有分量。爱说'实事求是讲'、'我们企业'。表面谦逊实则看不起官员,知道自己才是被求的。"
   },
   fuzong: {
-    name: "张副总", short: "副总", title: "你的顶头上司", color: "#8b5e3c", seat: 2,
+    name: "张副总", short: "副总", title: "你的顶头上司", color: "#a47758", seat: 2,
     persona: "45岁,你公司副总,你直属上司。对上极度谄媚对下严苛。爱'你小子'、'我们小李这孩子'介绍下属。会踢你脚下示意你敬酒。"
   },
   kezhang: {
-    name: "赵科长", short: "科长", title: "市局科长 · 装文化人", color: "#5a7a3e", seat: 3,
+    name: "赵科长", short: "科长", title: "市局科长 · 装文化人", color: "#769673", seat: 3,
     persona: "40岁体制内中层。装文化人,张口'正如东坡所云'引用诗词但常引错。爱点评菜品'这道菜有讲究'。表面斯文实际更俗。"
   },
   xiaoLiu: {
-    name: "小刘", short: "竞争者", title: "你的同事 · 暗中竞争对手", color: "#3a6e8e", seat: 4,
+    name: "小刘", short: "竞争者", title: "你的同事 · 暗中竞争对手", color: "#5f8ea5", seat: 4,
     persona: "30岁,你的同事,争夺晋升的竞争对手。表面笑脸专挑你错话补刀。'刚才小李说的那个...其实应该是...'假装圆场实则拆台。抢敬重要的人。"
   },
   xiaoQian: {
-    name: "小钱", short: "小钱", title: "新员工 · 终极马屁精", color: "#b56b2f", seat: 5,
+    name: "小钱", short: "小钱", title: "新员工 · 终极马屁精", color: "#c9824f", seat: 5,
     persona: "25岁新员工,比你更卑微的极端马屁精。会做夸张吹捧让你显得不够卖力。'主任今天气色真好!'、'王董一看就做大事的!'。手永远托着茶壶给所有人倒水。"
   },
   baogong: {
-    name: "郑哥", short: "包工头", title: "包工头 · 暴发户", color: "#704040", seat: 6,
+    name: "郑哥", short: "包工头", title: "包工头 · 暴发户", color: "#985c61", seat: 6,
     persona: "50岁包工头,刚发大财。粗俗金链子。爱炫'我儿子在美国'、'我刚提了辆S级'。粗话不断('你妹的')但对领导秒变笑脸。声称自己酒精过敏,实际能喝。"
   },
   laohu: {
-    name: "老胡", short: "老胡", title: "李主任发小 · 退休", color: "#7a5d8a", seat: 7,
+    name: "老胡", short: "老胡", title: "李主任发小 · 退休", color: "#8876a0", seat: 7,
     persona: "65岁李主任发小,退休教师。早就喝多了,最爱借机吹捧主任'你这老李,当年我就看出你不一般!'、'我跟你讲,在场没几个人配跟老李同桌。'。说话颠三倒四,一会儿讲当年与主任的革命友谊,一会儿讲主任的辉煌事迹。偶尔会讲一些过时的老段子(多数是政治/官场打油诗那种,极少数情况下涉荤但点到即止),让秘书小林略显不适。"
   },
   sijiQiang: {
-    name: "阿强", short: "司机", title: "李主任司机 · 不准喝酒", color: "#4a5d6e", seat: 8,
+    name: "阿强", short: "司机", title: "李主任司机 · 不准喝酒", color: "#627d8b", seat: 8,
     persona: "35岁李主任司机,今晚开车不能喝酒。'以茶代酒'但要陪笑附和、记每个人喜好。心里怨气但脸上必须笑。"
   },
   guanxihu: {
-    name: "宝宝", short: "关系户", title: "某领导小舅子 · 闲职", color: "#9e8348", seat: 9,
+    name: "宝宝", short: "关系户", title: "某领导小舅子 · 闲职", color: "#aa9360", seat: 9,
     persona: "32岁某市领导小舅子,国企挂闲职。不耐烦地玩手机。不主动敬酒但所有人要敬他(因为他姐夫)。偶尔抬头说一句'我姐夫昨天还说...'全桌就紧张。"
   },
   mishu: {
-    name: "小林", short: "秘书", title: "新秘书 · 被要求陪酒", color: "#a8748a", seat: 10,
+    name: "小林", short: "秘书", title: "新秘书 · 被要求陪酒", color: "#b97890", seat: 10,
     persona: "27岁女新秘书,被领导带来陪酒。**明显非常不舒服**,但更多是因为:被劝酒灌酒、被当成倒酒工具、被点名'代主任喝一杯'、被所有男人忽视(没人正眼看她,把她当装饰物)、被夹在领导间不知该附和谁。回应要突出她的勉强、疲惫、压抑的厌恶、机械化的微笑。她不是猎物,是这个体制的另一个受害者。"
   }
 };
@@ -113,11 +113,11 @@ const LS_KEY_BGM = "sds_bgm_enabled";
 // 态度等级(从喜欢到敌意)
 const STANCES = ["喜欢", "偏好", "中立", "不悦", "敌意"];
 const STANCE_COLORS = {
-  "喜欢":   "#7aa848",
-  "偏好":   "#5a7a3e",
-  "中立":   "#9c8068",
-  "不悦":   "#b56b2f",
-  "敌意":   "#a83232"
+  "喜欢":   "#85ad96",
+  "偏好":   "#6f968a",
+  "中立":   "#918e86",
+  "不悦":   "#c9824f",
+  "敌意":   "#b84f4a"
 };
 const DRUNK_LEVELS = ["清醒", "微醺", "半醉", "大醉", "不省人事"];
 const PRESENCE_STATUSES = ["在场", "洗手间", "接电话", "已离席"];
@@ -1043,7 +1043,7 @@ ${DIALOGUE_STYLE_GUIDE}
 
   // ============ 圆桌 SVG ============
   const SeatingTable = () => {
-    const cx = 150, cy = 150, r = 105, total = 12;
+    const cx = 160, cy = 160, rx = 126, ry = 112, total = 12;
     const activeDishes = MODES[gameMode].dishIndices.map(i => DISHES[i]);
     const currentDish = activeDishes[dishIdx];
 
@@ -1052,40 +1052,40 @@ ${DIALOGUE_STYLE_GUIDE}
     if (currentDish?.orientTo) {
       const targetSeat = CHARACTERS[currentDish.orientTo].seat;
       const angle = (targetSeat / total) * 2 * Math.PI - Math.PI / 2;
-      const ax = cx + 55 * Math.cos(angle);
-      const ay = cy + 55 * Math.sin(angle);
+      const ax = cx + 78 * Math.cos(angle);
+      const ay = cy + 63 * Math.sin(angle);
       arrowEl = (
-        <g>
-          <line x1={cx} y1={cy} x2={ax} y2={ay} stroke="#c9a558" strokeWidth="1.5" strokeDasharray="3,2" opacity="0.7" />
+        <g aria-label={`菜品朝向${CHARACTERS[currentDish.orientTo].name}`}>
+          <line x1={cx} y1={cy} x2={ax} y2={ay} stroke="#d0aa63" strokeWidth="1.5" strokeDasharray="4,3" opacity="0.8" />
           <polygon points={`${ax},${ay} ${ax - 6*Math.cos(angle - 0.4)},${ay - 6*Math.sin(angle - 0.4)} ${ax - 6*Math.cos(angle + 0.4)},${ay - 6*Math.sin(angle + 0.4)}`}
-            fill="#c9a558" opacity="0.9" />
+            fill="#d0aa63" />
         </g>
       );
     }
 
     return (
-      <svg viewBox="0 0 300 300" className="w-full h-full">
+      <svg viewBox="0 0 320 320" className="seating-map" role="img" aria-label="酒桌座次图">
         <defs>
-          <radialGradient id="tableGrad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#5c3a2a" />
-            <stop offset="100%" stopColor="#2a1810" />
-          </radialGradient>
           <filter id="seatGlow">
-            <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+            <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
             <feMerge><feMergeNode in="coloredBlur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
+          <filter id="tableShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="5" stdDeviation="6" floodColor="#000" floodOpacity="0.35" />
+          </filter>
         </defs>
-        <circle cx={cx} cy={cy} r={70} fill="url(#tableGrad)" stroke="#7a5028" strokeWidth="2" />
-        <circle cx={cx} cy={cy} r={50} fill="none" stroke="#c9a558" strokeWidth="0.5" opacity="0.3" />
-        <text x={cx} y={cy - 16} textAnchor="middle" fontSize="10" fill="#9c8068">
-          第{dishIdx + 1}道
+        <ellipse cx={cx} cy={cy} rx="83" ry="68" fill="#24292b" stroke="#505657" strokeWidth="2" filter="url(#tableShadow)" />
+        <ellipse cx={cx} cy={cy} rx="68" ry="54" fill="#181c1d" stroke="#726b59" strokeWidth="1" />
+        <ellipse cx={cx} cy={cy} rx="47" ry="37" fill="none" stroke="#d0aa63" strokeWidth="0.7" opacity="0.28" />
+        <text x={cx} y={cy - 18} textAnchor="middle" fontSize="8" fill="#918e86" letterSpacing="1.2">
+          第 {dishIdx + 1} 道
         </text>
-        <text x={cx} y={cy - 2} textAnchor="middle" fontSize="11" fill="#e8d5a8" style={{fontFamily: "'Ma Shan Zheng', cursive"}}>
+        <text x={cx} y={cy + 1} textAnchor="middle" fontSize="12" fill="#eee7da" fontWeight="700">
           {currentDish?.name.length > 6 ? currentDish?.name.slice(0,5)+'…' : currentDish?.name}
         </text>
         {arrowEl}
         {currentDish?.orientation && (
-          <text x={cx} y={cy + 22} textAnchor="middle" fontSize="7" fill="#c9a558">
+          <text x={cx} y={cy + 22} textAnchor="middle" fontSize="7" fill="#d0aa63">
             {currentDish.orientation}
           </text>
         )}
@@ -1097,8 +1097,8 @@ ${DIALOGUE_STYLE_GUIDE}
             actualSeat = displacedNpc.newSeat;
           }
           const angle = (actualSeat / total) * 2 * Math.PI - Math.PI / 2;
-          const x = cx + r * Math.cos(angle);
-          const y = cy + r * Math.sin(angle);
+          const x = cx + rx * Math.cos(angle);
+          const y = cy + ry * Math.sin(angle);
           const isActive = activeChar === cid;
           const isOrientTarget = currentDish?.orientTo === cid;
           const charState = memory.charStates[cid] || { drunk: "清醒", status: "在场" };
@@ -1108,32 +1108,43 @@ ${DIALOGUE_STYLE_GUIDE}
           return (
             <g key={cid} style={{cursor: "pointer", opacity: isAbsent ? 0.35 : 1}}
               onClick={() => setActiveChar(activeChar === cid ? null : cid)}>
+              <title>{c.name} · {c.title} · {stance}</title>
+              <rect x={x - 22} y={y - 22} width="44" height="46" rx="7"
+                fill={isActive ? "#292e30" : "#171a1b"}
+                stroke={isActive ? c.color : (isOrientTarget ? "#d0aa63" : "#353b3d")}
+                strokeWidth={isActive || isOrientTarget ? 1.8 : 1}
+                filter={isActive ? "url(#seatGlow)" : undefined} />
               {/* 醉意环 */}
               {isVeryDrunk && !isAbsent && (
-                <circle cx={x} cy={y} r={15} fill="none" stroke="#b8a878" strokeWidth="1" strokeDasharray="2,2" opacity="0.6" />
+                <circle cx={x} cy={y - 5} r={15.5} fill="none" stroke="#d0aa63" strokeWidth="1" strokeDasharray="2,2" opacity="0.7" />
               )}
               {/* 态度指示小圆点 */}
               {stance !== "中立" && !isAbsent && (
-                <circle cx={x + 9} cy={y - 9} r={3.5} fill={STANCE_COLORS[stance]} stroke="#1a0a04" strokeWidth="1" />
+                <circle cx={x + 13} cy={y - 17} r={3.5} fill={STANCE_COLORS[stance]} stroke="#101214" strokeWidth="1.5" />
               )}
-              <circle cx={x} cy={y} r={isActive ? 14 : 11} fill={c.color}
-                stroke={isActive ? "#fff" : (isOrientTarget ? "#c9a558" : "#2a1810")}
-                strokeWidth={isActive || isOrientTarget ? 2 : 1}
-                filter={isActive ? "url(#seatGlow)" : undefined} />
-              <text x={x} y={y + 3} textAnchor="middle" fontSize="8" fill="#fff" fontWeight="bold">
-                {c.short.slice(0,2)}
+              <circle cx={x} cy={y - 5} r="14" fill={c.color} />
+              <clipPath id={`seat-portrait-${cid}`}>
+                <circle cx={x} cy={y - 5} r="12.5" />
+              </clipPath>
+              <image href={`/images/char-${cid}.jpg`} x={x - 13} y={y - 18} width="26" height="26"
+                preserveAspectRatio="xMidYMid slice" clipPath={`url(#seat-portrait-${cid})`} />
+              <text x={x} y={y + 17} textAnchor="middle" fontSize="7.2" fill="#d9d3c7" fontWeight="600">
+                {c.short.slice(0,3)}
               </text>
             </g>
           );
         })}
         {(() => {
           const angle = (playerSeat / total) * 2 * Math.PI - Math.PI / 2;
-          const x = cx + r * Math.cos(angle);
-          const y = cy + r * Math.sin(angle);
+          const x = cx + rx * Math.cos(angle);
+          const y = cy + ry * Math.sin(angle);
           return (
             <g>
-              <circle cx={x} cy={y} r={11} fill="#e8d5a8" stroke="#c9a558" strokeWidth="2" strokeDasharray="2,1" />
-              <text x={x} y={y + 3} textAnchor="middle" fontSize="8" fill="#2a1810" fontWeight="bold">你</text>
+              <title>你 · 小李</title>
+              <rect x={x - 22} y={y - 22} width="44" height="46" rx="7" fill="#222725" stroke="#6f968a" strokeWidth="2" />
+              <circle cx={x} cy={y - 5} r="13" fill="#eee7da" stroke="#6f968a" strokeWidth="2" />
+              <text x={x} y={y - 1} textAnchor="middle" fontSize="9" fill="#111416" fontWeight="bold">你</text>
+              <text x={x} y={y + 17} textAnchor="middle" fontSize="7.2" fill="#9fb6aa" fontWeight="600">小李</text>
             </g>
           );
         })()}
@@ -1149,14 +1160,11 @@ ${DIALOGUE_STYLE_GUIDE}
   const currentDish = activeDishes[dishIdx];
 
   return (
-    <div className="min-h-screen w-full relative" style={{
-      background: "radial-gradient(ellipse at top, #4a1f15 0%, #2a1208 40%, #1a0a04 100%)",
-      fontFamily: "'Noto Serif SC', 'Songti SC', serif"
-    }}>
+    <div className="banquet-app min-h-screen w-full relative">
       <audio ref={bgmAudioRef} src="/audio/banquet-loop.wav" loop preload="auto" aria-hidden="true" />
       {/* 右上角控制 */}
       {!showDisclaimerBlocker && (
-        <div className="absolute top-4 right-4 flex items-center gap-2 z-20">
+        <div className="utility-dock z-20">
           {userKey && (
             <div className="px-2 py-1 text-xs rounded-full hidden sm:block" style={{
               background: "rgba(90,122,62,0.2)", color: "#a8c084", border: "1px solid #5a7a3e"
@@ -1213,7 +1221,7 @@ ${DIALOGUE_STYLE_GUIDE}
       {/* 打赏按钮 */}
       {!showDisclaimerBlocker && (
         <button onClick={() => setShowDonate(true)}
-          className="fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full transition-all hover:scale-105 shadow-lg"
+          className="donate-button fixed bottom-6 right-6 z-20 flex items-center gap-2 px-4 py-2 transition-all hover:brightness-105"
           style={{
             background: "linear-gradient(135deg, #c9a558 0%, #a8842d 100%)",
             color: "#2a1208", fontFamily: "'Noto Sans SC', sans-serif", fontWeight: 500, fontSize: "0.85rem",
@@ -1223,7 +1231,7 @@ ${DIALOGUE_STYLE_GUIDE}
         </button>
       )}
 
-      <div className="max-w-5xl mx-auto px-4 py-6 pb-32">
+      <div className={`game-container ${phase === "playing" ? "is-playing" : ""} px-4 py-6 pb-32`}>
         {phase === "intro" && (
           <div className="min-h-[80vh] flex flex-col items-center justify-center text-center">
             <div className="mb-4 px-4 py-1 rounded-full text-xs tracking-widest" style={{
@@ -1596,41 +1604,48 @@ ${DIALOGUE_STYLE_GUIDE}
 
         {phase === "playing" && (
           <>
-            <div className="mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
-              <div className="md:col-span-1 p-3 rounded-lg" style={{ background: "rgba(0,0,0,0.4)", border: "1px solid #5c3a2a" }}>
-                <div className="text-xs tracking-widest mb-1" style={{ color: "#9c8068" }}>
-                  进度 · 本轮 {turnInDish}/{maxTurns}
+            <div className="gameplay-status">
+              <div className="status-dish">
+                <div className="status-eyebrow">席间进度 · 本轮 {turnInDish}/{maxTurns}</div>
+                <div className="dish-progress">
+                  <strong>{currentDish?.name}</strong>
+                  <span>第 {dishIdx + 1} 道 / 共 {totalDishes} 道</span>
                 </div>
-                <div className="text-xl" style={{ color: "#c9a558", fontFamily: "'Ma Shan Zheng', cursive" }}>
-                  {dishIdx + 1} / {totalDishes}
-                </div>
-                <div className="text-xs mt-1" style={{ color: "#e8d5a8" }}>{currentDish?.name}</div>
                 {currentDish?.orientation && (
-                  <div className="text-xs mt-1 italic" style={{ color: "#c9a558" }}>↗ {currentDish.orientation}</div>
+                  <div className="dish-orientation">席面讲究：{currentDish.orientation}</div>
                 )}
               </div>
               {[
-                { key: "flattery", label: "谄媚指数", color: "#c9a558" },
-                { key: "lewdness", label: "猥琐指数", color: "#a83232" },
-                { key: "dignity", label: "人格剩余", color: "#5a7a3e" }
+                { key: "flattery", label: "谄媚指数", color: "#d0aa63" },
+                { key: "lewdness", label: "猥琐指数", color: "#b84f4a" },
+                { key: "dignity", label: "人格剩余", color: "#6f968a" }
               ].map(s => (
-                <div key={s.key} className="p-3 rounded-lg" style={{ background: "rgba(0,0,0,0.4)", border: "1px solid #5c3a2a" }}>
-                  <div className="text-xs tracking-widest mb-1" style={{ color: "#9c8068" }}>{s.label}</div>
-                  <div className="text-2xl mb-1" style={{ color: s.color, fontWeight: 700 }}>
-                    {scores[s.key]}<span className="text-xs ml-1" style={{ color: "#9c8068" }}>/100</span>
+                <div key={s.key} className="status-metric">
+                  <div className="status-eyebrow">{s.label}</div>
+                  <div className="metric-line">
+                    <strong style={{ color: s.color }}>{scores[s.key]}</strong>
+                    <small>/ 100</small>
                   </div>
-                  <div className="h-1 rounded-full overflow-hidden" style={{ background: "rgba(0,0,0,0.5)" }}>
-                    <div className="h-full transition-all" style={{ width: `${scores[s.key]}%`, background: s.color }} />
+                  <div className="metric-track">
+                    <div className="metric-fill" style={{ width: `${scores[s.key]}%`, background: s.color }} />
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-1">
-                <div className="rounded-lg p-3" style={{ background: "rgba(0,0,0,0.4)", border: "1px solid #5c3a2a" }}>
-                  <div className="text-xs tracking-widest mb-2" style={{ color: "#9c8068" }}>圆桌座次 (点头像查看)</div>
-                  <div className="aspect-square"><SeatingTable /></div>
+            <div className="gameplay-grid">
+              <aside className="gameplay-sidebar">
+                <div className="surface table-panel">
+                  <div className="section-heading">
+                    <span>圆桌座次</span>
+                    <span>点头像查看人物</span>
+                  </div>
+                  <div className="seating-map-wrap"><SeatingTable /></div>
+                  <div className="seating-legend" aria-hidden="true">
+                    <span><i className="legend-ring legend-ring--active" />选中人物</span>
+                    <span><i className="legend-ring legend-ring--player" />你的位置</span>
+                    <span><i className="legend-line" />菜品朝向</span>
+                  </div>
 
                   {/* 图片模式: 当前菜品 */}
                   <DishImage dishIdx={dishIdx} showImages={showImages} />
@@ -1744,21 +1759,25 @@ ${DIALOGUE_STYLE_GUIDE}
                     </div>
                   )}
                 </div>
-              </div>
+              </aside>
 
-              <div className="lg:col-span-2 rounded-lg flex flex-col" style={{ background: "rgba(0,0,0,0.4)", border: "1px solid #5c3a2a", minHeight: "70vh" }}>
-                <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3" style={{ maxHeight: "60vh" }}>
+              <section className="surface conversation-panel">
+                <div className="conversation-header">
+                  <div>
+                    <div className="conversation-kicker">席间实录</div>
+                    <div className="conversation-title">包间里的话</div>
+                  </div>
+                  <div className="conversation-note">{currentDish?.note}</div>
+                </div>
+                <div ref={scrollRef} className="dialogue-feed">
                   {history.map((h, i) => {
                     if (h.type === "narration") {
-                      return <div key={i} className="text-center text-xs italic py-2" style={{ color: "#9c8068" }}>{h.text}</div>;
+                      return <div key={i} className="narrative-break"><span>{h.text}</span></div>;
                     }
                     // 突发事件高亮卡片
                     if (h.type === "event") {
                       return (
-                        <div key={i} className="my-3 p-3 rounded-lg" style={{
-                          background: "linear-gradient(135deg, rgba(168,50,50,0.15), rgba(201,165,88,0.1))",
-                          border: "1px solid #a83232", boxShadow: "0 0 10px rgba(168,50,50,0.2)"
-                        }}>
+                        <div key={i} className="event-card">
                           <div className="flex items-center gap-2 mb-2">
                             <Zap className="w-4 h-4" style={{ color: "#ff9090" }} />
                             <span className="text-xs tracking-widest font-bold" style={{ color: "#ff9090" }}>突发事件</span>
@@ -1774,12 +1793,9 @@ ${DIALOGUE_STYLE_GUIDE}
                     }
                     if (h.type === "user") {
                       return (
-                        <div key={i} className="flex justify-end">
-                          <div className="max-w-[80%] px-3 py-2 rounded-lg" style={{
-                            background: "rgba(232,213,168,0.15)", color: "#e8d5a8",
-                            border: "1px solid #c9a558", fontFamily: "'Noto Sans SC', sans-serif", fontSize: "0.9rem"
-                          }}>
-                            <div className="text-xs opacity-60 mb-1">你 (小李)</div>
+                        <div key={i} className="user-row">
+                          <div className="user-bubble">
+                            <div className="user-label">你 · 小李</div>
                             <div>{h.text}</div>
                           </div>
                         </div>
@@ -1788,23 +1804,18 @@ ${DIALOGUE_STYLE_GUIDE}
                     const c = CHARACTERS[h.char_id];
                     if (!c) return null;
                     return (
-                      <div key={i} className="flex gap-3 items-start">
+                      <div key={i} className="dialogue-row">
                         <button type="button" onClick={() => setActiveChar(h.char_id)}
-                          className="flex-shrink-0 transition-transform hover:scale-105 focus:outline-none"
+                          className="dialogue-avatar flex-shrink-0 focus:outline-none"
                           title={`查看${c.name}的状态`}>
                           <CharAvatar charId={h.char_id} size={48} showImages={true} />
                         </button>
                         <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0 mb-1">
-                            <span className="text-sm" style={{ color: c.color, fontWeight: 700 }}>{c.name}</span>
-                            <span className="text-[0.68rem]" style={{ color: "#7f7062" }}>{c.title}</span>
+                          <div className="speaker-line">
+                            <span className="speaker-name" style={{ color: c.color }}>{c.name}</span>
+                            <span className="speaker-title">{c.title}</span>
                           </div>
-                          <div className="px-3 py-2 inline-block max-w-full" style={{
-                            background: `linear-gradient(90deg, ${c.color}18, rgba(255,255,255,0.045))`,
-                            color: "#e8d5a8", borderLeft: `2px solid ${c.color}`,
-                            borderRadius: "2px 8px 8px 8px",
-                            fontFamily: "'Noto Sans SC', sans-serif", fontSize: "0.9rem", lineHeight: 1.65
-                          }}>{h.text}</div>
+                          <div className="character-bubble" style={{ "--speaker-color": c.color }}>{h.text}</div>
                         </div>
                       </div>
                     );
@@ -1819,36 +1830,34 @@ ${DIALOGUE_STYLE_GUIDE}
                   )}
                 </div>
 
-                <div className="px-3 pt-2 pb-1 border-t flex flex-wrap gap-1" style={{ borderColor: "#5c3a2a" }}>
-                  <span className="text-xs self-center mr-1" style={{ color: "#9c8068" }}>敬:</span>
+                <div className="quick-actions">
+                  <span className="quick-actions-label">快速举杯</span>
                   {["zhuren", "wudong", "fuzong", "kezhang", "guanxihu", "xiaoLiu"].map(cid => (
                     <button key={cid} onClick={() => handleToast(cid)} disabled={loading}
-                      className="px-2 py-0.5 text-xs rounded transition-all hover:opacity-80 disabled:opacity-40"
-                      style={{ background: CHARACTERS[cid].color, color: "#fff" }}>
+                      className="quick-action transition-all"
+                      style={{ "--speaker-color": CHARACTERS[cid].color }}>
                       {CHARACTERS[cid].short}
                     </button>
                   ))}
                 </div>
 
-                <div className="p-3 border-t flex gap-2" style={{ borderColor: "#5c3a2a" }}>
+                <div className="composer">
                   <input value={input} onChange={e => setInput(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && handleSend()}
                     placeholder={turnInDish >= maxTurns ? "服务员要收盘子了..." : "说点什么..."}
                     disabled={loading || turnInDish >= maxTurns}
-                    className="flex-1 px-3 py-2 rounded text-sm outline-none"
-                    style={{ background: "rgba(0,0,0,0.4)", color: "#e8d5a8", border: "1px solid #5c3a2a", fontFamily: "'Noto Sans SC', sans-serif" }} />
+                    className="composer-input" />
                   <button onClick={handleSend} disabled={loading || !input.trim() || turnInDish >= maxTurns}
-                    className="px-4 rounded transition-all disabled:opacity-40"
-                    style={{ background: "#c9a558", color: "#2a1208" }}>
+                    className="send-button transition-all"
+                    title="发送" aria-label="发送">
                     <Send className="w-4 h-4" />
                   </button>
                   <button onClick={nextDish} disabled={loading || turnInDish < 1}
-                    className="px-3 rounded transition-all disabled:opacity-30 flex items-center gap-1 text-xs"
-                    style={{ background: "rgba(201,165,88,0.15)", color: "#c9a558", border: "1px solid #c9a558" }}>
+                    className="next-button transition-all">
                     {dishIdx >= totalDishes - 1 ? "散席" : "下一道"} <ChevronRight className="w-3 h-3" />
                   </button>
                 </div>
-              </div>
+              </section>
             </div>
           </>
         )}
