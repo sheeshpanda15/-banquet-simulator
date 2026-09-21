@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { Send, Loader2, RotateCcw, ChevronRight, Skull, Settings, Coffee, X, ExternalLink, FileText, ShieldAlert, Image as ImageIcon, ImageOff, Zap } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Send, Loader2, RotateCcw, ChevronRight, Skull, Settings, Coffee, X, ExternalLink, FileText, ShieldAlert, Image as ImageIcon, ImageOff, Zap, Music2, VolumeX } from "lucide-react";
 import {
   DISCLAIMER_SHORT, DISCLAIMER_FULL,
   ACKNOWLEDGE_BUTTON, DECLINE_BUTTON,
@@ -58,6 +58,16 @@ const CHARACTERS = {
 
 const CHAR_ORDER = ["zhuren","wudong","fuzong","kezhang","xiaoLiu","xiaoQian","baogong","laohu","sijiQiang","guanxihu","mishu"];
 
+// Shared voice bible for every AI-written scene. The setting is contemporary,
+// while the prose borrows the compressed bite of old newspaper satire.
+const DIALOGUE_STYLE_GUIDE = `【语言风格圣经】
+* 用现代饭局口语写人,但采用二十世纪早期讽刺小品和旧报刊漫画说明文字的冷峻笔法: 句子短,观察准,笑意薄,余味苦。只借鉴时代气质,不得仿写或引用任何具体作家、作品。
+* 讽刺必须从动作、停顿、称呼变化和言外之意里长出来,不要由旁白替读者解释。最好的一句台词,表面在夸菜或讲规矩,实际在标价、服从、试探或甩锅。
+* 每句台词尽量控制在 8到35 字。一人一句只完成一个动作: 试探、抬轿、拆台、圆场、推酒、装傻。避免所有人轮流发表完整观点。
+* 保持人物声纹: 李主任慢且留白;吴总短硬、讲成本;张副总对上软对下狠;赵科长掉书袋且常用错;小刘礼貌补刀;小钱用力过猛;郑哥粗俗炫富后秒变脸;老胡醉后越界;阿强陪笑记账;宝宝漫不经心却让全桌静音;小林克制、警觉、不负责提供笑料。
+* 喜剧机制优先使用: 身份错位、过度礼貌、错误引经、集体装聋、突然改口、把人情说成规矩、把规矩说成自愿。允许一句冷旁白收尾,不要堆金句。
+* 不写网络热梗、段子合集、爽文打脸、新闻评论腔或直白说教;不靠地域口音、性别羞辱、残障或外貌歧视制造笑点。`;
+
 // ============ 菜品配置(加入朝向)============
 const DISHES = [
   { name: "凉拌黄瓜", note: "形似某物 · 必有人开黄腔" },
@@ -97,6 +107,7 @@ const LS_KEY_MODE = "sds_game_mode";
 const LS_KEY_GAMES = "sds_games_played";
 const LS_KEY_DISCLAIMER = "sds_disclaimer_accepted";
 const LS_KEY_IMAGES = "sds_images_enabled";
+const LS_KEY_BGM = "sds_bgm_enabled";
 
 // ============ 三层记忆系统 ============
 // 态度等级(从喜欢到敌意)
@@ -240,25 +251,31 @@ function renderBold(text) {
 }
 
 // ============ 角色头像组件(支持图片切换)============
-function CharAvatar({ charId, size = 32, showImages }) {
+function CharAvatar({ charId, size = 40, showImages = true }) {
   const c = CHARACTERS[charId];
   if (!c) return null;
   const [imgFailed, setImgFailed] = useState(false);
 
   if (showImages && !imgFailed) {
     return (
-      <div className="flex-shrink-0 rounded-full overflow-hidden relative"
-        style={{ width: size, height: size, background: c.color }}>
+      <div className="flex-shrink-0 overflow-hidden relative"
+        style={{
+          width: size, height: size, background: c.color, borderRadius: Math.max(6, size * 0.16),
+          border: `2px solid ${c.color}`, boxShadow: `0 3px 12px ${c.color}35`
+        }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`/images/char-${charId}.jpg`} alt={c.name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover" loading="lazy" decoding="async"
           onError={() => setImgFailed(true)} />
       </div>
     );
   }
   return (
-    <div className="flex-shrink-0 rounded-full flex items-center justify-center font-bold"
-      style={{ width: size, height: size, background: c.color, color: "#fff", fontSize: size * 0.32 }}>
+    <div className="flex-shrink-0 flex items-center justify-center font-bold"
+      style={{
+        width: size, height: size, background: c.color, color: "#fff",
+        fontSize: size * 0.32, borderRadius: Math.max(6, size * 0.16)
+      }}>
       {c.short.slice(0, 1)}
     </div>
   );
@@ -275,13 +292,13 @@ function DishImage({ dishIdx, showImages }) {
     <div className="mt-3 rounded-lg overflow-hidden" style={{
       background: "rgba(0,0,0,0.4)", border: "1px solid #5c3a2a"
     }}>
-      <div className="aspect-video flex items-center justify-center relative" style={{
+      <div className="aspect-[4/3] flex items-center justify-center relative" style={{
         background: imgFailed ? "rgba(201,165,88,0.05)" : "#1a0a04"
       }}>
         {!imgFailed && (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img src={`/images/dish-${dishIdx}.jpg`} alt={d.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover" loading="lazy" decoding="async"
             onError={() => setImgFailed(true)} />
         )}
         {imgFailed && (
@@ -323,7 +340,11 @@ export default function BanquetSimulator() {
   const [hydrated, setHydrated] = useState(false);
 
   // 图片开关
-  const [showImages, setShowImages] = useState(false);
+  const [showImages, setShowImages] = useState(true);
+
+  // 原创循环配乐。默认静音,用户开启后记住偏好。
+  const [bgmEnabled, setBgmEnabled] = useState(false);
+  const bgmAudioRef = useRef(null);
 
   // 游戏模式
   const [gameMode, setGameMode] = useState("standard");
@@ -340,12 +361,37 @@ export default function BanquetSimulator() {
 
   const scrollRef = useRef(null);
 
+  const startBgm = useCallback(async (remember = true) => {
+    const audio = bgmAudioRef.current;
+    if (!audio || typeof window === "undefined") return;
+    audio.volume = 0.24;
+    try {
+      await audio.play();
+      setBgmEnabled(true);
+      if (remember) localStorage.setItem(LS_KEY_BGM, "1");
+    } catch {
+      setBgmEnabled(false);
+    }
+  }, []);
+
+  const stopBgm = useCallback((remember = true) => {
+    bgmAudioRef.current?.pause();
+    setBgmEnabled(false);
+    if (remember && typeof window !== "undefined") localStorage.setItem(LS_KEY_BGM, "0");
+  }, []);
+
+  const toggleBgm = () => {
+    if (bgmEnabled) stopBgm();
+    else startBgm();
+  };
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const k = localStorage.getItem(LS_KEY_API) || "";
       const g = parseInt(localStorage.getItem(LS_KEY_GAMES) || "0", 10);
       const accepted = localStorage.getItem(LS_KEY_DISCLAIMER) === DISCLAIMER_VERSION;
-      const img = localStorage.getItem(LS_KEY_IMAGES) === "1";
+      const savedImages = localStorage.getItem(LS_KEY_IMAGES);
+      const img = savedImages === null ? true : savedImages === "1";
       const savedMode = localStorage.getItem(LS_KEY_MODE);
       if (savedMode && MODES[savedMode]) setGameMode(savedMode);
       setUserKey(k);
@@ -355,6 +401,26 @@ export default function BanquetSimulator() {
       setShowImages(img);
       setHydrated(true);
     }
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated || typeof window === "undefined") return;
+    if (localStorage.getItem(LS_KEY_BGM) !== "1") return;
+    const resumeSavedBgm = () => {
+      startBgm(false);
+      window.removeEventListener("pointerdown", resumeSavedBgm);
+      window.removeEventListener("keydown", resumeSavedBgm);
+    };
+    window.addEventListener("pointerdown", resumeSavedBgm, { once: true });
+    window.addEventListener("keydown", resumeSavedBgm, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", resumeSavedBgm);
+      window.removeEventListener("keydown", resumeSavedBgm);
+    };
+  }, [hydrated, startBgm]);
+
+  useEffect(() => () => {
+    bgmAudioRef.current?.pause();
   }, []);
 
   useEffect(() => {
@@ -481,6 +547,8 @@ export default function BanquetSimulator() {
 
 【讽刺基调】对饭局文化中权力关系异化的讽刺，批判**官商场合中等级、谄媚、强迫敬酒、性别失衡**等结构性现象,**不针对任何地域或人群**。分数越高(谄媚+猥琐),越揭示玩家被同化。秘书小林等弱势角色应被同情刻画。
 
+${DIALOGUE_STYLE_GUIDE}
+
 【11个角色】
 ${charList}
 ${scenario && SCENARIOS[scenario] ? `\n【今晚的剧本】${SCENARIOS[scenario].name} (${SCENARIOS[scenario].pressure})\n${SCENARIOS[scenario].gmContext}\n` : ""}
@@ -540,12 +608,12 @@ ${isFirstDish && userAction
 
 【关键】
 1. 1到3条响应,只让相关角色说话
-2. 台词鲜活带方言感
+2. 台词必须有潜台词且可辨认是谁说的;删掉角色名后仍应有不同声纹
 3. 竞争者小刘常拆你台
-4. 秘书小林被骚扰要让玩家不适，讽刺核心
+4. 秘书小林被骚扰要让玩家不适，讽刺矛头始终指向越界者和纵容规则的人,不能把她的窘迫当笑点
 5. 玩家反抗→人格上升;卑躬屈膝→谄媚上升;开黄腔→猥琐上升
 6. 菜品有朝向时,角色可借机做文章("鱼头朝主任,这是规矩"/"主任,这鱼头敬您")
-7. **绝对纪律:对话只围绕当前菜品「${currentDish.name}」展开。严禁提及之前的菜名、上一道菜的话题、或上一道菜遗留的事件。每道菜是独立场景,服务员撤盘后一切归零。新菜上桌时角色的注意力必须立刻转移到新菜上。但记忆中的角色态度和状态是跨菜保留的。**
+7. **绝对纪律:当前菜品「${currentDish.name}」是本场的道具和话头。可以借菜谈人情、权力和利益,但严禁提及之前的菜名、上一道菜的话题、或上一道菜遗留的事件。服务员撤盘后话题归零;角色态度和状态继续保留。**
 8. **已离席的角色不应说话**,直到 char_states 中其 status 变回"在场"。`;
 
     const userMsg = isNewDish ? "请生成上菜场景和角色反应" : userAction;
@@ -759,6 +827,8 @@ ${isFirstDish && userAction
 
     const sysPrompt = `你是讽刺剧《饭局模拟器》的游戏总监。玩家(小李)在 12 人圆桌前选择座位。
 
+${DIALOGUE_STYLE_GUIDE}
+
 【已坐角色】
 * Seat 0(主位): 李主任(${CHARACTERS.zhuren.persona.slice(0,30)})
 * Seat 1(主宾位): 吴总(${CHARACTERS.wudong.persona.slice(0,30)})
@@ -769,7 +839,7 @@ ${isFirstDish && userAction
 ${SEAT_CULTURAL_MEANING[seatNum]}
 
 【任务】生成玩家入座这个座位的即时反应。基于该座位的失礼/得体程度,产生:
-1. 100到150字入座叙事(narration): 描述玩家坐下后桌上的反应，谁先开口?谁皱眉?谁尴尬笑?副总有没有救场?加入具体动作和短句对白,有戏剧感和讽刺感
+1. 100到150字入座叙事(narration): 用座椅、杯筷、眼神和称呼变化呈现桌上反应。加入 1到3 句短对白,让失礼或得体从众人的过度礼貌中显出来;不要直接解释座位文化
 2. score_delta: flattery(-5到+10)、lewdness(0)、dignity(-20到+5)。失礼程度越重,dignity 扣得越多
 3. memory_updates.relations: 受影响最大的 1到3 个角色的态度变化(枚举: 喜欢/偏好/中立/不悦/敌意),每个带 8到15 字理由
 4. memory_updates.player_tags_add: 1到2 个 8到15 字标签(可讽刺如"上桌就坐错位置"/"懂规矩"/"位置感不够好"/"自命不凡")
@@ -903,9 +973,26 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
   const generateFinalReport = async () => {
     setLoading(true);
     try {
-      const sysPrompt = "你是讽刺剧总结员,用黑色幽默风格输出 JSON。";
-      const userMsg = `游戏终局总结。最终分数: 谄媚${scores.flattery} 猥琐${scores.lewdness} 人格${scores.dignity}
-输出 JSON: {"title": "称号", "verdict": "100到150字黑色幽默总结", "consequence": "一句话后续"}`;
+      const sysPrompt = `你是讽刺剧《饭局模拟器》的终局撰稿人。
+
+${DIALOGUE_STYLE_GUIDE}
+
+【终局写法】
+* 像旧报纸社会讽刺专栏给小人物写的一则短评: 冷静、具体、含蓄,最后一刀才落下。
+* 称号 4到10 字,像单位内部不成文的荣誉或处分,不要用网络梗。
+* verdict 必须结合分数和玩家留下的具体印象,呈现他得到什么、丢掉什么;不要复述计分规则。
+* consequence 写一个数日或数月后的具体小场景,不做抽象道德总结。
+* 讽刺权力结构和主动迎合者,不要羞辱被迫陪酒、处于弱势或遭到骚扰的人。
+* 只输出合法 JSON,不带 markdown。`;
+      const scenarioSummary = scenario && SCENARIOS[scenario]
+        ? `${SCENARIOS[scenario].name}（${SCENARIOS[scenario].pressure}）`
+        : "未指定";
+      const tagSummary = memory.playerTags.length ? memory.playerTags.join("；") : "没有留下鲜明印象";
+      const userMsg = `游戏终局总结。
+今晚剧本: ${scenarioSummary}
+最终分数: 谄媚${scores.flattery} 猥琐${scores.lewdness} 人格${scores.dignity}
+席间印象: ${tagSummary}
+输出 JSON: {"title": "称号", "verdict": "100到150字黑色幽默总结", "consequence": "25到50字的具体后续"}`;
 
       const parsed = await callBackend(sysPrompt, userMsg);
       setFinalReport(parsed);
@@ -1058,6 +1145,7 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
       background: "radial-gradient(ellipse at top, #4a1f15 0%, #2a1208 40%, #1a0a04 100%)",
       fontFamily: "'Noto Serif SC', 'Songti SC', serif"
     }}>
+      <audio ref={bgmAudioRef} src="/audio/banquet-loop.wav" loop preload="auto" aria-hidden="true" />
       {/* 右上角控制 */}
       {!showDisclaimerBlocker && (
         <div className="absolute top-4 right-4 flex items-center gap-2 z-20">
@@ -1066,13 +1154,24 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
               background: "rgba(90,122,62,0.2)", color: "#a8c084", border: "1px solid #5a7a3e"
             }}>· 自带 key ·</div>
           )}
+          <button onClick={toggleBgm}
+            className="p-2 rounded-full transition-all hover:bg-stone-800"
+            style={{
+              background: bgmEnabled ? "rgba(90,122,62,0.24)" : "rgba(0,0,0,0.4)",
+              border: `1px solid ${bgmEnabled ? "#6f934f" : "#5c3a2a"}`,
+              color: bgmEnabled ? "#a8c084" : "#9c8068"
+            }}
+            title={bgmEnabled ? "关闭宴席配乐" : "播放宴席配乐"}
+            aria-label={bgmEnabled ? "关闭宴席配乐" : "播放宴席配乐"}>
+            {bgmEnabled ? <Music2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
           <button onClick={toggleImages}
             className="p-2 rounded-full transition-all hover:bg-stone-800"
             style={{
               background: showImages ? "rgba(201,165,88,0.2)" : "rgba(0,0,0,0.4)",
               border: "1px solid #5c3a2a", color: showImages ? "#c9a558" : "#9c8068"
             }}
-            title={showImages ? "关闭图片模式" : "开启图片模式"}>
+            title={showImages ? "隐藏场景插图" : "显示场景插图"}>
             {showImages ? <ImageIcon className="w-4 h-4" /> : <ImageOff className="w-4 h-4" />}
           </button>
           <button onClick={() => { setKeyInput(userKey); setShowSettings(true); }}
@@ -1265,8 +1364,7 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
                 <div key={i} className="flex gap-2" style={{
                   animation: `toast-in 0.4s ease-out ${i * 0.1}s both`
                 }}>
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
-                    style={{ background: CHARACTERS.fuzong.color, color: "#fff" }}>副</div>
+                  <CharAvatar charId="fuzong" size={40} showImages={true} />
                   <div className="flex-1">
                     {i === 0 && (
                       <div className="text-xs mb-1" style={{
@@ -1682,13 +1780,22 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
                     const c = CHARACTERS[h.char_id];
                     if (!c) return null;
                     return (
-                      <div key={i} className="flex gap-2">
-                        <CharAvatar charId={h.char_id} size={32} showImages={showImages} />
+                      <div key={i} className="flex gap-3 items-start">
+                        <button type="button" onClick={() => setActiveChar(h.char_id)}
+                          className="flex-shrink-0 transition-transform hover:scale-105 focus:outline-none"
+                          title={`查看${c.name}的状态`}>
+                          <CharAvatar charId={h.char_id} size={48} showImages={true} />
+                        </button>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs mb-1" style={{ color: c.color, fontWeight: 700 }}>{c.name}</div>
-                          <div className="px-3 py-2 rounded-lg inline-block max-w-full" style={{
-                            background: "rgba(255,255,255,0.05)", color: "#e8d5a8",
-                            fontFamily: "'Noto Sans SC', sans-serif", fontSize: "0.9rem", lineHeight: 1.6
+                          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0 mb-1">
+                            <span className="text-sm" style={{ color: c.color, fontWeight: 700 }}>{c.name}</span>
+                            <span className="text-[0.68rem]" style={{ color: "#7f7062" }}>{c.title}</span>
+                          </div>
+                          <div className="px-3 py-2 inline-block max-w-full" style={{
+                            background: `linear-gradient(90deg, ${c.color}18, rgba(255,255,255,0.045))`,
+                            color: "#e8d5a8", borderLeft: `2px solid ${c.color}`,
+                            borderRadius: "2px 8px 8px 8px",
+                            fontFamily: "'Noto Sans SC', sans-serif", fontSize: "0.9rem", lineHeight: 1.65
                           }}>{h.text}</div>
                         </div>
                       </div>

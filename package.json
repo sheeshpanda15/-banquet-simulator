@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "generate:bgm": "node scripts/generate-bgm.mjs",
     "start": "next start"
   },
   "dependencies": {
