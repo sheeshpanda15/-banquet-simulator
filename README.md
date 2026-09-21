@@ -46,7 +46,9 @@ banquet-simulator/
 ├── public/
 │   ├── donate-wechat.jpg        # 你的微信收款码(自行添加)
 │   ├── donate-alipay.jpg        # 你的支付宝收款码(自行添加)
-│   └── images/                  # 角色头像 + 菜品图片(后续添加)
+│   ├── images/                  # 11 张角色头像 + 12 张菜品插图
+│   └── audio/banquet-loop.wav   # 原创 16 秒无缝循环配乐
+├── scripts/generate-bgm.mjs     # 可重复生成配乐素材
 ├── package.json
 ├── next.config.js
 ├── tailwind.config.js
