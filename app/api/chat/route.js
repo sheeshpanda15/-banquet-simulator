@@ -50,6 +50,9 @@ export async function POST(request) {
 
     if (!geminiRes.ok) {
       const errText = await geminiRes.text();
+      console.error("Gemini API error", {
+        status: geminiRes.status,
+      });
       // 如果是 key 无效,提示用户
       if (geminiRes.status === 400 && errText.includes("API_KEY")) {
         return Response.json(
@@ -58,7 +61,7 @@ export async function POST(request) {
         );
       }
       return Response.json(
-        { error: `Gemini API 错误: ${errText.slice(0, 500)}` },
+        { error: `Gemini API 请求失败 (HTTP ${geminiRes.status})。请稍后重试或检查 API key 权限。` },
         { status: geminiRes.status }
       );
     }

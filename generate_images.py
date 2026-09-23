@@ -16,7 +16,7 @@ import requests
 # ==================== 配置区域 ====================
 # 从环境变量读取 API Key,避免硬编码泄露
 # 用法: export MINIMAX_API_KEY="sk-cp-xxx"  然后再运行脚本
-API_KEY = "MINIMAX_KEY_REMOVED"
+API_KEY = os.environ.get("MINIMAX_API_KEY", "").strip()
 
 # MiniMax 图片生成 API 地址
 # - 海外版 (Key 一般是 sk-cp- 开头): https://api.minimaxi.io/v1/image_generation
@@ -27,7 +27,7 @@ def pick_api_url(key: str) -> str:
         return "https://api.minimax.io/v1/image_generation"
     return "https://api.minimax.com/v1/image_generation"
 
-API_URL = pick_api_url(API_KEY)
+API_URL = pick_api_url(API_KEY) if API_KEY else ""
 
 # 输出目录
 OUTPUT_DIR = Path("imgs")
