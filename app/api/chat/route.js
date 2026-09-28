@@ -4,6 +4,38 @@
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
+const DEFAULT_MODEL = "gemini-3.5-flash-lite";
+
+function parseGeminiError(errText) {
+  try {
+    const data = JSON.parse(errText);
+    const error = data.error || {};
+    const code = error.status || error.code;
+    const message = error.message || errText;
+    return code ? `${code}: ${message}` : message;
+  } catch {
+    return errText;
+  }
+}
+
+function buildGeminiError(status, errText) {
+  const detail = parseGeminiError(errText);
+
+  if (status === 400 && /API_KEY|api key|key not valid/i.test(detail)) {
+    return "API key 无效。请检查 key 是否完整,并确认它来自 Google AI Studio。";
+  }
+
+  if ((status === 403 || status === 404) && /model|permission|not found|denied|not supported/i.test(detail)) {
+    return `当前 Gemini 模型不可用或这个 key 没有权限。建议把 GEMINI_MODEL 改成 ${DEFAULT_MODEL}。Gemini 返回: ${detail}`;
+  }
+
+  if (status === 429 || /quota|rate limit/i.test(detail)) {
+    return `Gemini 配额或频率限制已触发。请稍后重试,或检查 Google AI Studio 的额度。Gemini 返回: ${detail}`;
+  }
+
+  return `Gemini API 请求失败 (HTTP ${status})。Gemini 返回: ${detail}`;
+}
+
 export async function POST(request) {
   try {
     const { system, user, userKey } = await request.json();
@@ -25,12 +57,15 @@ export async function POST(request) {
       );
     }
 
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
 
     const geminiRes = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: system }] },
         contents: [{ role: "user", parts: [{ text: user }] }],
@@ -52,16 +87,10 @@ export async function POST(request) {
       const errText = await geminiRes.text();
       console.error("Gemini API error", {
         status: geminiRes.status,
+        body: errText,
       });
-      // 如果是 key 无效,提示用户
-      if (geminiRes.status === 400 && errText.includes("API_KEY")) {
-        return Response.json(
-          { error: "API key 无效或权限不足。请检查你填的 key 是否正确。" },
-          { status: 400 }
-        );
-      }
       return Response.json(
-        { error: `Gemini API 请求失败 (HTTP ${geminiRes.status})。请稍后重试或检查 API key 权限。` },
+        { error: buildGeminiError(geminiRes.status, errText) },
         { status: geminiRes.status }
       );
     }

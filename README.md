@@ -1,6 +1,6 @@
 # 饭局模拟器 · The Banquet of Souls
 
-一部关于职场饭局文化的黑色幽默讽刺作品。由 Gemini 2.5 Flash 驱动。
+一部关于职场饭局文化的黑色幽默讽刺作品。由 Gemini 驱动。
 
 ## 部署 (Vercel)
 
@@ -13,7 +13,7 @@
 
 ## 可选环境变量
 
-- `GEMINI_MODEL` —— 默认 `gemini-2.5-flash`。改成 `gemini-2.5-pro` 用 Pro 模型
+- `GEMINI_MODEL` —— 默认 `gemini-3.5-flash-lite`。如果你的 key 仍有 Gemini 2.5 权限,也可以改成 `gemini-2.5-flash` 或 `gemini-2.5-pro`
 
 ## 本地开发
 
@@ -28,8 +28,8 @@ npm run dev
 ## 成本预估
 
 每位玩家完整玩一局大约:
-- gemini-2.5-flash: $0.02 - $0.05 / 局 (标准模式)  /  $0.01 - $0.02 / 局 (速战模式)
-- gemini-2.5-pro: $0.30 - $0.80 / 局
+- gemini-3.5-flash-lite: 适合默认游玩,成本较低
+- gemini-2.5-flash / gemini-2.5-pro: 仅在你的 key 有对应模型权限时使用
 
 建议在 Google Cloud Console 设置每日预算告警,防止超支。
 
