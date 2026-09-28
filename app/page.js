@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, RotateCcw, ChevronRight, Skull, Settings, Coffee, X, ExternalLink, FileText, ShieldAlert, Image as ImageIcon, ImageOff, Zap, Music2, VolumeX } from "lucide-react";
+import { Send, Loader2, RotateCcw, ChevronRight, Skull, Settings, Coffee, X, ExternalLink, FileText, ShieldAlert, Image as ImageIcon, ImageOff, Zap, Music2, VolumeX, CircleCheck, CircleAlert } from "lucide-react";
 import {
   DISCLAIMER_SHORT, DISCLAIMER_FULL,
   ACKNOWLEDGE_BUTTON, DECLINE_BUTTON,
@@ -334,6 +334,7 @@ export default function BanquetSimulator() {
   const [showDonate, setShowDonate] = useState(false);
   const [gamesPlayed, setGamesPlayed] = useState(0);
   const [keyInput, setKeyInput] = useState("");
+  const [apiStatus, setApiStatus] = useState({ state: "idle", message: "尚未检测" });
 
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(true);
   const [showFullDisclaimer, setShowFullDisclaimer] = useState(false);
@@ -360,6 +361,28 @@ export default function BanquetSimulator() {
   const [icebreakInput, setIcebreakInput] = useState("");
 
   const scrollRef = useRef(null);
+
+  const checkApiConnection = async (key = userKey) => {
+    setApiStatus({ state: "checking", message: "正在连接 Gemini..." });
+    try {
+      const res = await fetch("/api/health", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userKey: key?.trim() || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "API 连通性检测失败");
+      const sourceLabel = data.source === "browser" ? "浏览器自带 Key" : "Vercel 环境变量";
+      setApiStatus({
+        state: "connected",
+        message: `已连接 · ${sourceLabel} · ${data.model}`,
+        source: data.source,
+        model: data.model,
+      });
+    } catch (e) {
+      setApiStatus({ state: "error", message: e.message || "API 连通性检测失败" });
+    }
+  };
 
   const startBgm = useCallback(async (remember = true) => {
     const audio = bgmAudioRef.current;
@@ -400,7 +423,10 @@ export default function BanquetSimulator() {
       setDisclaimerAccepted(accepted);
       setShowImages(img);
       setHydrated(true);
+      checkApiConnection(k);
     }
+    // Initial connection check uses the key read from localStorage above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -453,7 +479,7 @@ export default function BanquetSimulator() {
       else localStorage.removeItem(LS_KEY_API);
     }
     setUserKey(k);
-    setShowSettings(false);
+    checkApiConnection(k);
   };
 
   const callBackend = async (systemPrompt, userMessage) => {
@@ -874,6 +900,7 @@ ${SEAT_CULTURAL_MEANING[seatNum]}
   // 听张副总安排 : 确定性逻辑(3到5 人格随机)
   const askForAssignment = () => {
     if (loading) return;
+    setError(null);
     const dignityLoss = 3 + Math.floor(Math.random() * 3); // 3, 4, or 5
 
     setPlayerSeat(6); // 设置在门口位置(6号位)
@@ -1158,6 +1185,11 @@ ${DIALOGUE_STYLE_GUIDE}
   const maxTurns = MODES[gameMode].turnsPerDish;
   const totalDishes = activeDishes.length;
   const currentDish = activeDishes[dishIdx];
+  const apiConnected = apiStatus.state === "connected";
+  const apiChecking = apiStatus.state === "checking";
+  const apiStatusColor = apiConnected ? "#a8c084" : apiChecking ? "#c9a558" : "#ff9f91";
+  const apiStatusBorder = apiConnected ? "#5a7a3e" : apiChecking ? "#8f7331" : "#a83232";
+  const apiStatusLabel = apiConnected ? "API 已连接" : apiChecking ? "API 检测中" : "API 异常";
 
   return (
     <div className="banquet-app min-h-screen w-full relative">
@@ -1165,11 +1197,21 @@ ${DIALOGUE_STYLE_GUIDE}
       {/* 右上角控制 */}
       {!showDisclaimerBlocker && (
         <div className="utility-dock z-20">
-          {userKey && (
-            <div className="px-2 py-1 text-xs rounded-full hidden sm:block" style={{
-              background: "rgba(90,122,62,0.2)", color: "#a8c084", border: "1px solid #5a7a3e"
-            }}>· 自带 key ·</div>
-          )}
+          <button onClick={() => { setKeyInput(userKey); setShowSettings(true); }}
+            className="flex items-center gap-1.5 px-2 py-1 text-xs rounded-full transition-all hover:brightness-110"
+            style={{
+              background: apiConnected ? "rgba(90,122,62,0.2)" : apiChecking ? "rgba(201,165,88,0.14)" : "rgba(168,50,50,0.18)",
+              color: apiStatusColor,
+              border: `1px solid ${apiStatusBorder}`
+            }}
+            title={apiStatus.message}>
+            {apiChecking
+              ? <Loader2 className="w-3 h-3 animate-spin" />
+              : apiConnected
+                ? <CircleCheck className="w-3 h-3" />
+                : <CircleAlert className="w-3 h-3" />}
+            <span className="hidden sm:inline">{apiStatusLabel}</span>
+          </button>
           <button onClick={toggleBgm}
             className="p-2 rounded-full transition-all hover:bg-stone-800"
             style={{
@@ -1523,6 +1565,17 @@ ${DIALOGUE_STYLE_GUIDE}
             </div>
 
             {/* 听安排按钮 */}
+            {error && (
+              <div className="mb-4 max-w-md rounded-md px-4 py-3 text-xs leading-relaxed" style={{
+                background: "rgba(168,50,50,0.18)",
+                border: "1px solid rgba(168,50,50,0.42)",
+                color: "#ffb3a8",
+                fontFamily: "'Noto Sans SC', sans-serif"
+              }}>
+                {error}
+              </div>
+            )}
+
             <button onClick={askForAssignment} disabled={loading}
               className="px-5 py-2 rounded-full text-sm transition-all hover:opacity-80 disabled:opacity-40"
               style={{
@@ -1993,6 +2046,21 @@ ${DIALOGUE_STYLE_GUIDE}
               填入后所有 API 调用走你的账号,作者不收你一分钱,你想玩多少局都行
             </p>
             <div className="space-y-3 text-sm" style={{ color: "#e8d5a8" }}>
+              <div className="flex items-start gap-2 p-3 rounded text-xs leading-relaxed" style={{
+                background: apiConnected ? "rgba(90,122,62,0.14)" : apiChecking ? "rgba(201,165,88,0.08)" : "rgba(168,50,50,0.14)",
+                color: apiStatusColor,
+                border: `1px solid ${apiStatusBorder}`
+              }}>
+                {apiChecking
+                  ? <Loader2 className="w-4 h-4 mt-0.5 shrink-0 animate-spin" />
+                  : apiConnected
+                    ? <CircleCheck className="w-4 h-4 mt-0.5 shrink-0" />
+                    : <CircleAlert className="w-4 h-4 mt-0.5 shrink-0" />}
+                <div>
+                  <div className="font-medium mb-0.5">{apiStatusLabel}</div>
+                  <div style={{ color: apiConnected ? "#b9cda1" : apiStatusColor }}>{apiStatus.message}</div>
+                </div>
+              </div>
               <div>
                 <label className="block text-xs mb-1" style={{ color: "#9c8068" }}>Gemini API Key</label>
                 <input value={keyInput} onChange={e => setKeyInput(e.target.value)}
@@ -2014,7 +2082,12 @@ ${DIALOGUE_STYLE_GUIDE}
               <div className="flex gap-2 pt-2">
                 <button onClick={saveKey}
                   className="flex-1 px-4 py-2 rounded transition-all hover:opacity-80"
-                  style={{ background: "#c9a558", color: "#2a1208", fontWeight: 600 }}>保存</button>
+                  style={{ background: "#c9a558", color: "#2a1208", fontWeight: 600 }}>保存并检测</button>
+                <button onClick={() => checkApiConnection(keyInput)} disabled={apiChecking}
+                  className="px-3 py-2 rounded text-xs transition-all hover:opacity-80 disabled:opacity-50"
+                  style={{ background: "transparent", color: "#c9a558", border: "1px solid #8f7331" }}>
+                  {apiChecking ? "检测中" : "重新检测"}
+                </button>
                 {userKey && (
                   <button onClick={() => { setKeyInput(""); }}
                     className="px-3 py-2 rounded text-xs transition-all hover:opacity-80"
